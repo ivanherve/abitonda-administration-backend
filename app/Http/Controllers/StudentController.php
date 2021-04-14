@@ -50,7 +50,7 @@ class StudentController extends Controller
         $picture = $request->input('Picture');
         if (!$picture) return $this->errorRes('Veuillez insérer une photo', 404);
 
-        $classe = Classe::all()->where('Classe', '=', $classe)->pluck('ClasseId')->first();
+        $classe = Classe::all()->where('Name', '=', $classe)->pluck('ClasseId')->first();
         if (!$classe) return $this->errorRes('Cette classe est introuvable', 404);
 
         //return $this->debugRes($classe);

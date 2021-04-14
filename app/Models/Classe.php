@@ -16,6 +16,6 @@ class Classe extends Model
      * @var array
      */
     protected $fillable = [
-        'ClasseId', 'Classe'
+        'ClasseId', 'Name'
     ];
 }
