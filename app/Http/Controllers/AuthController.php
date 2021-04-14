@@ -31,7 +31,7 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function signIn(Request $request)
-    {
+    {/*
         $allOldTokens = Token::all();
         foreach ($allOldTokens as $k => $t) {
             # delete all of them
@@ -40,7 +40,7 @@ class AuthController extends Controller
                     DB::select("UPDATE token SET Api_token = ? WHERE TokenId = ?", [null, $t->TokenId]);
                     Log::info("$t->TokenId deleted");
                 }
-        }
+        }*/
 
         $pswd = $request->input('password');
         $email = $request->input('email');

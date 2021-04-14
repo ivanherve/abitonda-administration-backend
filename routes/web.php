@@ -28,10 +28,12 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/students', 'StudentController@getStudents');
     $router->get('/students/pagination', 'StudentController@getTenStudents');
     $router->post('/student/create', 'StudentController@addStudent');
-    $router->get('/parents', 'StudentController@getParents');
     $router->get('/sclasse', 'StudentController@getStudentPerClasse');
 
     // CLASSES
     $router->get('/classes', 'ClasseController@getClasses');
 
+    // PARENTS
+    $router->get('/parents', 'StudentController@getParents');
+    $router->post('/parents/create', 'ParentController@addParentOfOneStudent');
 });
