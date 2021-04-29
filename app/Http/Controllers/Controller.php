@@ -29,7 +29,7 @@ class Controller extends BaseController
     public function errorRes($response, $code)
     {
         return response()->json(['status' => 0, 'response' => $response], $code);
-    }    
+    }
 
     public function debugRes($response)
     {
@@ -71,5 +71,26 @@ class Controller extends BaseController
     public function public_path($path = null)
     {
         return rtrim(app()->basePath('public/' . $path), '/');
+    }
+
+    public function csvToArray($filename = '', $delimiter = ';')
+    {
+        if (!file_exists($filename) || !is_readable($filename))
+            return false;
+
+        $header = null;
+        $data = array();
+        if (($handle = fopen($filename, 'r')) !== false) {
+            while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
+                $row = array_map("utf8_encode", $row);
+                if (!$header)
+                    $header = $row;
+                else
+                    $data[] = array_combine($header, $row);
+            }
+            fclose($handle);
+        }
+
+        return $data;
     }
 }
