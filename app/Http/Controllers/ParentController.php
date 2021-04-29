@@ -21,6 +21,23 @@ class ParentController extends Controller
 
     public function addParentOfOneStudent(Request $request)
     {
+        $parentSelected = $request->input('Name');
+
+        if ($parentSelected) {
+            $studentId = $request->input('StudentId');
+            $student = Student::all()->where('StudentId', '=', $studentId)->first();
+            if (!$student) return $this->errorRes('Cet étudiant est introuvable', 404);
+            $parentId = $request->input('ParentId');
+            $parent = Parents::all()->where('ParentId', '=', $parentId)->first();
+            if (!$parent) return $this->errorRes('Ce parent est introuvble', 404);
+
+            $findLink = DB::select('call find_link_parent_student(?,?)', [$student->StudentId, $parent->ParentId]);
+            if ($findLink) return $this->errorRes('Ce lien existe déjà', 500);
+
+            if (DB::insert('call add_link_parent_student(?,?)', [$student->StudentId, $parent->ParentId]))
+                return $this->successRes("$parentSelected a bien été ajouté");
+        }
+
         $firstname = $request->input('firstname');
         if (!$firstname) return $this->errorRes('Veuillez insérer un prénom', 404);
 
@@ -57,5 +74,11 @@ class ParentController extends Controller
 
         if (DB::insert('call add_link_parent_student(?,?)', [$student->StudentId, $parent->ParentId]))
             return $this->successRes("$firstname $lastname a bien été ajouté");
+    }
+
+    public function getListParent(Request $request)
+    {
+        $parent = DB::table('vlistparent')->get();
+        return $this->successRes($parent);
     }
 }
