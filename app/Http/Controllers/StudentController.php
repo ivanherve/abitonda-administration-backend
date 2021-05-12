@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Classe;
 use App\Models\Student;
 use App\Models\Parents;
+use App\Views\VNeighborhood;
+use App\Views\VNumberStudentPerNeighborhood;
 use App\Views\VStudents;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -119,6 +121,7 @@ class StudentController extends Controller
         if (!$studentId) return $this->errorRes('De quel élève s\'agit-il ?', 404);
 
         $student = Student::all()->where('StudentId', '=', $studentId)->first();
+        $vstudent = VStudents::all()->where('StudentId', '=', $studentId)->first();
 
         $firstname = $request->input('firstname');
         if (!$firstname) $firstname = $student->Firstname;
@@ -136,9 +139,17 @@ class StudentController extends Controller
         $registered = filter_var($request->input('Registered'), FILTER_VALIDATE_BOOLEAN);
         $picture = $request->input('Picture');
         if (!$picture) $picture = $student->Picture;
+        $address = $request->input('address');
+        if (!$address) $address = $student->Address;
 
         $classe = Classe::all()->where('Name', '=', $classe)->first();
         if ($classe) $classeId = $classe->ClasseId;
+
+        $neighborhood = $request->input('neighborhood');
+        if (!$neighborhood) $neighborhood = $vstudent->Neighborhood;
+        $sector = VNeighborhood::all()->where('Neighborhood', '=', $neighborhood)->first();
+        if (!$sector) return $this->errorRes('Ce secteur n\'existe pas ou est introuvable dans le système', 404);
+        $sectorId = $sector->SectorId;
 
         $data = [
             'Lastname' => strtoupper($lastname),
@@ -149,7 +160,9 @@ class StudentController extends Controller
             'Picture' => $picture,
             'ClasseId' => $classeId,
             'Registered' => $registered,
-            'Allergies' => $allergies
+            'Allergies' => $allergies,
+            'SectorId' => $sectorId,
+            'Address' => $address
         ];
         /*
         return $this->debugRes([
@@ -186,5 +199,25 @@ class StudentController extends Controller
 
         $classe = DB::select('call get_students_per_classe(?);', [$classeId]);
         return $this->successRes($classe);
+    }
+
+    public function getNeighborhoods()
+    {
+        $neighborhood = VNeighborhood::all();
+        return $this->successRes($neighborhood);
+    }
+
+    public function getNumberStudentPerNeighborhood()
+    {
+        $studentPerNeighborhood = VNumberStudentPerNeighborhood::all();
+        return $this->successRes($studentPerNeighborhood);
+    }
+
+    public function getNumberStudentPerSector()
+    {
+        $studentPerSector = DB::select("SELECT District, sum(NbStudents) as NbStudents
+        FROM vnumberstudentperneighborhood
+        group by district;");
+        return $this->successRes($studentPerSector);
     }
 }

@@ -32,6 +32,9 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/sclasse', 'StudentController@getStudentPerClasse');
     $router->post('/editstudent', 'StudentController@editStudent');
     $router->get('/searchstudent', 'StudentController@searchStudent');
+    $router->get('/neighborhoods', 'StudentController@getNeighborhoods');
+    $router->get('/numbstudentperneighborhoods', 'StudentController@getNumberStudentPerNeighborhood');
+    $router->get('/numbstudentpersector', 'StudentController@getNumberStudentPerSector');
 
     // CLASSES
     $router->get('/classes', 'ClasseController@getClasses');
