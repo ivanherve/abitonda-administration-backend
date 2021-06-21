@@ -35,6 +35,14 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/neighborhoods', 'StudentController@getNeighborhoods');
     $router->get('/numbstudentperneighborhoods', 'StudentController@getNumberStudentPerNeighborhood');
     $router->get('/numbstudentpersector', 'StudentController@getNumberStudentPerSector');
+    $router->get('/pastbday', 'StudentController@getPastBday');
+    $router->get('/comingbday', 'StudentController@getComingBday');
+
+    // EMPLOYEE
+    $router->get('/employees', 'EmployeeController@getEmployees');
+    $router->get('/banks', 'EmployeeController@getBanks');
+    $router->get('/jobs', 'EmployeeController@getJobs');
+    $router->post('/addemployee', 'EmployeeController@addEmployee');
 
     // CLASSES
     $router->get('/classes', 'ClasseController@getClasses');
@@ -43,4 +51,8 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/parents', 'StudentController@getStudentParents');
     $router->post('/parents/create', 'ParentController@addParentOfOneStudent');
     $router->get('/listparents', 'ParentController@getListParent');
+
+    // INVOICES
+    $router->get('/invoices', 'InvoicesController@getInvoices');
+    $router->post('/addinvoices', 'InvoicesController@addInvoices');
 });
