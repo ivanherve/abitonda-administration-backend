@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Classe;
 use App\Models\Student;
 use App\Models\Parents;
+use App\Views\VComingBday;
 use App\Views\VNeighborhood;
 use App\Views\VNumberStudentPerNeighborhood;
+use App\Views\VPastBday;
 use App\Views\VStudents;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -219,5 +221,17 @@ class StudentController extends Controller
         FROM vnumberstudentperneighborhood
         group by district;");
         return $this->successRes($studentPerSector);
+    }
+
+    public function getComingBday()
+    {
+        $comingbday = VComingBday::all();
+        return $this->successRes($comingbday);
+    }
+
+    public function getPastBday()
+    {
+        $pastbday = VPastBday::all();
+        return $this->successRes($pastbday);
     }
 }
