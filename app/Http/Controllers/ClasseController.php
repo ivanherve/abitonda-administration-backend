@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Classe;
+use App\Views\VClasse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ClasseController extends Controller
 {
@@ -19,13 +21,15 @@ class ClasseController extends Controller
 
     public function getClasses(Request $request)
     {
-        $classes = Classe::all();
+        $classes = VClasse::all();
 
         $oneClass = $request->get('classe');
 
-        if(!$oneClass) return $this->successRes($classes);
+        if (!$oneClass) return $this->successRes($classes);
 
-        $oneClass = Classe::all()->where('Classe','=',$oneClass)->first();
+        $oneClass = VClasse::all()->where('Name', '=', $oneClass)->first();
+
+        $oneClass['assistants'] = DB::select("call get_assistants(?)", [$oneClass->ClasseId]);
 
         return $this->successRes([$oneClass]);
     }

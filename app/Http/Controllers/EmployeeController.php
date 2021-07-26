@@ -69,8 +69,8 @@ class EmployeeController extends Controller
         $bank = Bank::all()->where('Name', '=', $data->bankSelected)->pluck('BankId')->first();
 
         $newEmployee = [
-            'Firstname' => $data->firstname,
-            'Lastname' => $data->lastname,
+            'Firstname' => strtoupper($data->firstname),
+            'Lastname' => strtoupper($data->lastname),
             'Email' => $data->email,
             'BankId' => $bank,
             'BankAccount' => $data->account,
@@ -104,5 +104,10 @@ class EmployeeController extends Controller
         if (!$positions) return $this->errorRes('Ce poste n\'a pas pu être associé à l\'employée', 500);
 
         return $this->successRes("L'employée a bien été ajouté");
+    }
+
+    public function EditEmployee(Request $request)
+    {
+        # code...
     }
 }
