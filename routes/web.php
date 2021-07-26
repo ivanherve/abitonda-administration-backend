@@ -37,12 +37,14 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/numbstudentpersector', 'StudentController@getNumberStudentPerSector');
     $router->get('/pastbday', 'StudentController@getPastBday');
     $router->get('/comingbday', 'StudentController@getComingBday');
+    $router->get('/passtonextclass', 'StudentController@PassToNextClass');
 
     // EMPLOYEE
     $router->get('/employees', 'EmployeeController@getEmployees');
     $router->get('/banks', 'EmployeeController@getBanks');
     $router->get('/jobs', 'EmployeeController@getJobs');
     $router->post('/addemployee', 'EmployeeController@addEmployee');
+    $router->post('/editemployee', 'EmployeeController@addEmployee');
 
     // CLASSES
     $router->get('/classes', 'ClasseController@getClasses');

@@ -234,4 +234,19 @@ class StudentController extends Controller
         $pastbday = VPastBday::all();
         return $this->successRes($pastbday);
     }
+
+    public function PassToNextClass()
+    {
+        $students = Student::all();
+        if(!$students) return $this->errorRes('Il n\'existe pas d\'élève dans le système', 404);
+
+        $arr = [];
+
+        foreach ($students as $key => $value) {
+            //array_push($arr,['ClasseId' => ($value->ClasseId + 2)]);
+            $value->fill(['ClasseId' => ($value->ClasseId + 1)])->save();
+        }
+
+        return $this->debugRes($students);
+    }
 }
