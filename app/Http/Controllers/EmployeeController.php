@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Job as JobsJob;
 use App\Models\Bank;
 use App\Models\Document;
 use App\Models\Employee;
@@ -108,6 +109,66 @@ class EmployeeController extends Controller
 
     public function EditEmployee(Request $request)
     {
-        # code...
+        $data = $request->input('data');
+        $data = json_decode($data);
+
+        $employee = Employee::all()->where('EmployeeId', '=', $data->EmployeeId)->first();
+
+        $firstname = $data->Firstname;
+        if (!$firstname) $firstname = $employee->Firstname;
+
+        $lastname = $data->Lastname;
+        if (!$lastname) $lastname = $employee->Lastname;
+
+        $bankAccount = $data->bankAccount;
+        if (!$bankAccount) $bankAccount = $employee->BankAccount;
+
+        $bankSelected = $data->bankSelected;
+        $bankId = Bank::all()->where('Name', '=', $bankSelected)->pluck('BankId')->first();
+        if (!$bankId) $bankId = $employee->BankId;
+
+        $email = $data->email;
+        if (!$email) $email = $employee->email;
+
+        $nbDays = $data->NbDays;
+        if (!$nbDays) $nbDays = $employee->NbDays;
+
+        $nbRssb = $data->nbRSSB;
+        if (!$nbRssb) $nbRssb = $employee->NbRSSB;
+
+        $positions = $data->positions;
+        $documents = $data->documents;
+
+        $newEmployee = [
+            'Firstname' => $firstname,
+            'Lastname' => $lastname,
+            'BankAccount' => $bankAccount,
+            'BankId' => $bankId,
+            'Email' => $email,
+            'NbDays' => $nbDays,
+            'NbRSSB' => $nbRssb,
+            'positions' => $positions,
+            'documents' => $documents
+        ];
+
+        if ($employee->fill($newEmployee)->save()) {
+            foreach ($documents as $key => $value) {
+                if (!DB::select("call get_one_document_of_one_employee(?,?)", [$employee->EmployeeId, $value])) {
+                    Document::create([
+                        'EmployeeId' => $employee->EmployeeId,
+                        'Name' => $value
+                    ]);
+                }
+            }
+            foreach ($positions as $key => $value) {
+                $p = Job::all()->where('Name', '=', $value)->pluck('JobId')->first();
+                if (!DB::select("call get_job_of_employee(?,?)", [$employee->EmployeeId, $p])) {
+                    DB::insert("call set_job_to_employee(?,?)", [$employee->EmployeeId, $p]);
+                };
+            }
+        };
+        return $this->successRes($newEmployee);
+
+        //return $this->debugRes($newEmployee);
     }
 }
