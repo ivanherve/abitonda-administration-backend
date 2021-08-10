@@ -9,7 +9,9 @@ use App\Views\VComingBday;
 use App\Views\VNeighborhood;
 use App\Views\VNumberStudentPerNeighborhood;
 use App\Views\VPastBday;
+use App\Views\VSoras;
 use App\Views\VStudents;
+use App\Views\VTransport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -64,7 +66,10 @@ class StudentController extends Controller
         $classe = Classe::all()->where('Name', '=', $classe)->pluck('ClasseId')->first();
         if (!$classe) return $this->errorRes('Cette classe est introuvable', 404);
 
-        //return $this->debugRes($classe);
+        $neighborhood = $request->input('neighborhoodSelected');
+        if (!$neighborhood) return $this->errorRes('Veuillez séléctionner un quartier', 404);
+
+        //return $this->debugRes($neighborhood);
 
         $newStudent = Student::create([
             'Lastname' => strtoupper($lastname),
@@ -117,6 +122,38 @@ class StudentController extends Controller
         return $this->successRes('la liste a bien été importé');
     }
 
+    public function getSorasList()
+    {
+        $students = VSoras::all();
+
+        return $this->successRes($students);
+    }
+
+    public function getTransportList()
+    {
+        $students = VTransport::all();
+
+        return $this->successRes($students);
+    }
+
+    public function getBirthdayListPerClass(Request $request)
+    {
+        $classeId = $request->get('cI');
+        if (!$classeId) return $this->errorRes("De quelle classe s'agit-il ?", 404);
+        $students = DB::select("call get_birthday_list_per_classe(?);", [$classeId]);
+
+        return $this->successRes($students);
+    }
+
+    public function getPresenceListPerClasse(Request $request)
+    {
+        $classe = $request->get('classe');
+        if (!$classe) return $this->errorRes("De quelle classe s'agit-il ?", 404);
+        $students = DB::select("call get_presence_per_classe(?);", [$classe]);
+
+        return $this->successRes($students);
+    }
+
     public function editStudent(Request $request)
     {
         $studentId = $request->input('studentId');
@@ -150,7 +187,12 @@ class StudentController extends Controller
         $neighborhood = $request->input('neighborhood');
         if (!$neighborhood) $neighborhood = $vstudent->Neighborhood;
         $sector = VNeighborhood::all()->where('Neighborhood', '=', $neighborhood)->first();
-        if (!$sector) return $this->errorRes('Ce secteur n\'existe pas ou est introuvable dans le système', 404);
+        if (!$sector) {
+            //return $this->debugRes($student->SectorId);
+            if(!$student->SectorId) return $this->errorRes('Ce secteur n\'existe pas ou est introuvable dans le système', 404);
+            else $sector = VNeighborhood::all()->where('SectorId', '=', $student->SectorId)->first();
+        }
+        
         $sectorId = $sector->SectorId;
 
         $data = [
@@ -238,7 +280,7 @@ class StudentController extends Controller
     public function PassToNextClass()
     {
         $students = Student::all();
-        if(!$students) return $this->errorRes('Il n\'existe pas d\'élève dans le système', 404);
+        if (!$students) return $this->errorRes('Il n\'existe pas d\'élève dans le système', 404);
 
         $arr = [];
 
