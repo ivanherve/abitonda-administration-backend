@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class VInvoice extends Model
 {
     protected $connection = 'mysql2';
-    protected $table = 'vinvoice';
+    protected $table = 'vinvoices';
     protected $primaryKey = 'InvoiceId';
 
     /**
