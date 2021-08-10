@@ -81,4 +81,48 @@ class ParentController extends Controller
         $parent = DB::table('vlistparent')->get();
         return $this->successRes($parent);
     }
+
+    public function removeLinkParent(Request $request)
+    {
+        $studentId = $request->input('studentId');
+        $parentId = $request->input('parentId');
+        if (DB::delete("call del_link_parent_student(?,?)", [$studentId, $parentId]))
+            return $this->successRes('Ce contact a bien été retiré');
+    }
+
+    public function editParent(Request $request)
+    {
+        $parentId = $request->input('ParentId');
+        $parent = Parents::all()->where('ParentId', '=', $parentId)->first();
+        if (!$parent) return $this->errorRes('Ce parent n\'existe pas dans le système', 404);
+
+        $firstname = $request->input('Firstname');
+        if(!$firstname) $firstname = $parent->Firstname;
+
+        $lastname = $request->input('Lastname');
+        if(!$lastname) $lastname = $parent->Lastname;
+
+        $phoneNumb = $request->input('PhoneNumb');
+        if(!$phoneNumb) $phoneNumb = $parent->PhoneNumb;
+
+        $address = $request->input('Address');
+        if(!$address) $address = $parent->Address;
+
+        $email = $request->input('Email');
+        if(!$email) $email = $parent->Email;
+
+        $linkChild = $request->input('LinkChild');
+        if(!$linkChild) $linkChild = $parent->LinkChild;
+
+        $parentUpdated = [
+            'Lastname' => $lastname, 
+            'Firstname' => $firstname, 
+            'PhoneNumb' => $phoneNumb, 
+            'Email' => $email, 
+            'Address' => $address, 
+            'LinkChild' => $linkChild
+        ];
+
+        return $this->debugRes($parentUpdated);
+    }
 }
