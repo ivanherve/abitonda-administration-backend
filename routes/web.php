@@ -52,6 +52,11 @@ $router->group(['prefix' => '/api'], function () use ($router) {
 
     // CLASSES
     $router->get('/classes', 'ClasseController@getClasses');
+    $router->post('/addteacher', 'ClasseController@AddTeacher');
+    $router->post('/removeteacher', 'ClasseController@RemoveTeacher');
+    $router->post('/addassistant', 'ClasseController@AddAssistant');
+    $router->post('/removeassistant', 'ClasseController@RemoveAssistant');
+    $router->get('/getlistcontactperclasse', 'ClasseController@getListContactPerClasse');
 
     // PARENTS
     $router->get('/parents', 'StudentController@getStudentParents');
