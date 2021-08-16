@@ -148,10 +148,15 @@ class EmployeeController extends Controller
             'NbDays' => $nbDays,
             'NbRSSB' => $nbRssb,
             'positions' => $positions,
-            'documents' => $documents
+            'documents' => $documents,
         ];
 
+        $positionsToRemove = $data->positionsToRemove;
+
+        //return $this->debugRes(['toAdd' => $data->positions, 'toReomve' => $data->positionsToRemove]);
+
         if ($employee->fill($newEmployee)->save()) {
+            // Add the documents
             foreach ($documents as $key => $value) {
                 if (!DB::select("call get_one_document_of_one_employee(?,?)", [$employee->EmployeeId, $value])) {
                     Document::create([
@@ -160,15 +165,30 @@ class EmployeeController extends Controller
                     ]);
                 }
             }
-            foreach ($positions as $key => $value) {
-                $p = Job::all()->where('Name', '=', $value)->pluck('JobId')->first();
-                if (!DB::select("call get_job_of_employee(?,?)", [$employee->EmployeeId, $p])) {
-                    DB::insert("call set_job_to_employee(?,?)", [$employee->EmployeeId, $p]);
-                };
-            }
+
+            // Add the positions
+            if (sizeof($positions) > 0)
+                foreach ($positions as $key => $value) {
+                    $p = Job::all()->where('Name', '=', $value)->pluck('JobId')->first();
+                    $check = DB::select("call get_job_of_employee(?,?)", [$employee->EmployeeId, $p]);
+                    if (sizeof($check) < 1) {
+                        DB::insert("call set_job_to_employee(?,?)", [$employee->EmployeeId, $p]);
+                    };
+                }
+
+            if (sizeof($positionsToRemove) > 0)
+                foreach ($positionsToRemove as $key => $value) {
+                    $p = Job::all()->where('Name', '=', $value)->pluck('JobId')->first();
+                    $check = DB::select("call get_job_of_employee(?,?)", [$employee->EmployeeId, $p]);
+                    if (sizeof($check) > 0) {
+                        DB::delete("call unset_job_to_employee(?,?)", [$employee->EmployeeId, $p]);
+                    };
+                }
         };
+
         return $this->successRes($newEmployee);
 
         //return $this->debugRes($newEmployee);
+
     }
 }
