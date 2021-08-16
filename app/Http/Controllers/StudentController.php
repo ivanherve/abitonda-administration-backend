@@ -189,10 +189,10 @@ class StudentController extends Controller
         $sector = VNeighborhood::all()->where('Neighborhood', '=', $neighborhood)->first();
         if (!$sector) {
             //return $this->debugRes($student->SectorId);
-            if(!$student->SectorId) return $this->errorRes('Ce secteur n\'existe pas ou est introuvable dans le système', 404);
+            if (!$student->SectorId) return $this->errorRes('Ce secteur n\'existe pas ou est introuvable dans le système', 404);
             else $sector = VNeighborhood::all()->where('SectorId', '=', $student->SectorId)->first();
         }
-        
+
         $sectorId = $sector->SectorId;
 
         $data = [
@@ -286,7 +286,7 @@ class StudentController extends Controller
 
         foreach ($students as $key => $value) {
             //array_push($arr,['ClasseId' => ($value->ClasseId + 2)]);
-            $value->fill(['ClasseId' => ($value->ClasseId + 1)])->save();
+            $value->fill(['ClasseId' => ($value->ClasseId + 1), 'NewStudent' => 0])->save();
         }
 
         return $this->debugRes($students);
