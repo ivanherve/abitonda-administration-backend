@@ -10,7 +10,7 @@ ADD ./conf /etc/apache2/sites-enabled
 ADD ./conf /etc/apache2/sites-available
 RUN mkdir /etc/ssl/abitonda-certification
 RUN chmod 700 /etc/ssl/abitonda-certification
-COPY abitonda-certification /etc/ssl/abitonda-certification
+#COPY abitonda-certification /etc/ssl/abitonda-certification
 
 RUN a2enmod ssl
 RUN a2enmod rewrite
