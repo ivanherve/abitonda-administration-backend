@@ -61,7 +61,7 @@ class StudentController extends Controller
         $classe = $request->input('Classe');
         if (!$classe) return $this->errorRes('Veuillez insérer une classe', 404);
         $picture = $request->input('Picture');
-        if (!$picture) return $this->errorRes('Veuillez insérer une photo', 404);
+        //if (!$picture) return $this->errorRes('Veuillez insérer une photo', 404);
 
         $classe = Classe::all()->where('Name', '=', $classe)->pluck('ClasseId')->first();
         if (!$classe) return $this->errorRes('Cette classe est introuvable', 404);
@@ -180,6 +180,16 @@ class StudentController extends Controller
         if (!$picture) $picture = $student->Picture;
         $address = $request->input('address');
         if (!$address) $address = $student->Address;
+        $newStudent = filter_var($request->input('newStudent'), FILTER_VALIDATE_BOOLEAN);
+        if (!$newStudent) $newStudent = $student->NewStudent;
+
+        $rulesSigned = filter_var($request->input('rulesSigned'), FILTER_VALIDATE_BOOLEAN);
+        $registrationFileFilled = filter_var($request->input('registrationFileFilled'), FILTER_VALIDATE_BOOLEAN);
+        $vaccinsFile = filter_var($request->input('vaccinsFile'), FILTER_VALIDATE_BOOLEAN);
+        $piano = filter_var($request->input('piano'), FILTER_VALIDATE_BOOLEAN);
+        $guitar = filter_var($request->input('guitar'), FILTER_VALIDATE_BOOLEAN);
+        $swimmingpool = filter_var($request->input('swimmingpool'), FILTER_VALIDATE_BOOLEAN);
+        $danse = filter_var($request->input('danse'), FILTER_VALIDATE_BOOLEAN);
 
         $classe = Classe::all()->where('Name', '=', $classe)->first();
         if ($classe) $classeId = $classe->ClasseId;
@@ -195,6 +205,8 @@ class StudentController extends Controller
 
         $sectorId = $sector->SectorId;
 
+        //return $this->debugRes($rulesSigned);
+
         $data = [
             'Lastname' => strtoupper($lastname),
             'Firstname' => strtoupper($firstname),
@@ -206,19 +218,27 @@ class StudentController extends Controller
             'Registered' => $registered,
             'Allergies' => $allergies,
             'SectorId' => $sectorId,
-            'Address' => $address
+            'Address' => $address,
+            'NewStudent' => $newStudent,
+            'InternalRulesSigned' => $rulesSigned,
+            'RegistrationFileFilled' => $registrationFileFilled,
+            'VaccinsFile' => $vaccinsFile,
+            'Piano' => $piano,
+            'Guitar' => $guitar,
+            'Piscine' => $swimmingpool,
+            'Danse' => $danse
         ];
-        /*
+        /*  
         return $this->debugRes([
             '$data' => $data,
             '$registered' => $registered,
             'Canteen' => $canteen,
             'Transport' => $transport,
-        ]);
-*/
+        ]);*/
+
         $student->fill($data)->save();
 
-        return $this->successRes('Mis à jour réussi');
+        return $this->successRes('Mis à jour réussi');/**/
     }
 
     public function getStudentParents(Request $request)
