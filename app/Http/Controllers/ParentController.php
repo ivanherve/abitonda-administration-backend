@@ -51,7 +51,7 @@ class ParentController extends Controller
         if (!$email) $email = "";
 
         $address = $request->input('address');
-        if (!$address) return $this->errorRes('Veuillez insérer l\'adresse du domicile', 404);
+        if (!$address) $address = ''; //return $this->errorRes('Veuillez insérer l\'adresse du domicile', 404);
 
         $linkChild = $request->input('linkChild');
         if (!$linkChild) $linkChild = "";
@@ -115,14 +115,16 @@ class ParentController extends Controller
         if(!$linkChild) $linkChild = $parent->LinkChild;
 
         $parentUpdated = [
-            'Lastname' => $lastname, 
-            'Firstname' => $firstname, 
-            'PhoneNumb' => $phoneNumb, 
-            'Email' => $email, 
-            'Address' => $address, 
-            'LinkChild' => $linkChild
+            'Lastname' => strtoupper($lastname), 
+            'Firstname' => strtoupper($firstname), 
+            'PhoneNumb' => strtoupper($phoneNumb), 
+            'Email' => strtoupper($email),
+            'Address' => strtoupper($address), 
+            'LinkChild' => strtoupper($linkChild)
         ];
 
-        return $this->debugRes($parentUpdated);
+        $parent->fill($parentUpdated)->save();
+
+        return $this->successRes($parentUpdated);
     }
 }
