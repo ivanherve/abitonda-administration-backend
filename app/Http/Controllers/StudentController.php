@@ -56,8 +56,16 @@ class StudentController extends Controller
         if (!$lastname) return $this->errorRes('Veuillez insérer un nom de famille', 404);
         $birthdate = $request->input('Birthdate');
         if (!$birthdate) return $this->errorRes('Veuillez insérer une date de naissance', 404);
-        $canteen = $request->input('Canteen');
-        $transport = $request->input('Transport');
+        $canteen = filter_var($request->input('Canteen'), FILTER_VALIDATE_BOOLEAN);
+        $transport = filter_var($request->input('Transport'), FILTER_VALIDATE_BOOLEAN);
+        $rulesSigned = filter_var($request->input('rulesSigned'), FILTER_VALIDATE_BOOLEAN);
+        $registrationFileFilled = filter_var($request->input('registrationFileFilled'), FILTER_VALIDATE_BOOLEAN);
+        $vaccinsFile = filter_var($request->input('vaccinsFile'), FILTER_VALIDATE_BOOLEAN);
+        $piano = filter_var($request->input('piano'), FILTER_VALIDATE_BOOLEAN);
+        $guitar = filter_var($request->input('guitar'), FILTER_VALIDATE_BOOLEAN);
+        $danse = filter_var($request->input('danse'), FILTER_VALIDATE_BOOLEAN);
+        $swimmingpool = filter_var($request->input('swimmingpool'), FILTER_VALIDATE_BOOLEAN);
+
         $classe = $request->input('Classe');
         if (!$classe) return $this->errorRes('Veuillez insérer une classe', 404);
         $picture = $request->input('Picture');
@@ -78,7 +86,14 @@ class StudentController extends Controller
             'Canteen' => $canteen,
             'Transport' => $transport,
             'ClasseId' => $classe,
-            'Picture' => $picture
+            'Picture' => $picture,
+            'InternalRulesSigned' => $rulesSigned,
+            'RegistrationFileFilled' => $registrationFileFilled,
+            'VaccinsFile' => $vaccinsFile,
+            'Piano' => $piano,
+            'Guitar' => $guitar,
+            'Piscine' => $swimmingpool,
+            'Danse' => $danse
         ]);
 
         return $this->successRes($newStudent);
