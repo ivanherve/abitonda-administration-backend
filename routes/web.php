@@ -42,6 +42,7 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/pastbday', 'StudentController@getPastBday');
     $router->get('/comingbday', 'StudentController@getComingBday');
     $router->get('/passtonextclass', 'StudentController@PassToNextClass');
+    $router->post('/studentspicture', 'StudentController@getStudentsPicture');
 
     // EMPLOYEE
     $router->get('/employees', 'EmployeeController@getEmployees');

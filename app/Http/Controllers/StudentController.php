@@ -99,6 +99,15 @@ class StudentController extends Controller
         return $this->successRes($newStudent);
     }
 
+    public function getStudentsPicture(Request $request)
+    {
+        $studentId = $request->input('studentId');
+        if (!$studentId) return $this->errorRes('De quel élève s\'agit-il ?', 404);
+        $picture = DB::select("call get_students_picture(?)", [$studentId]);
+
+        return $this->successRes($picture);
+    }
+
     public function addStudentCSV(Request $request)
     {
         $file = $request->file('csv');
