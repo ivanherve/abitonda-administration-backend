@@ -9,6 +9,7 @@ use App\Views\VComingBday;
 use App\Views\VNeighborhood;
 use App\Views\VNumberStudentPerNeighborhood;
 use App\Views\VPastBday;
+use App\Views\VRegistrationIncomplete;
 use App\Views\VSoras;
 use App\Views\VStudents;
 use App\Views\VTransport;
@@ -97,6 +98,14 @@ class StudentController extends Controller
         ]);
 
         return $this->successRes($newStudent);
+    }
+
+    public function getRegistrationIncomplete()
+    {
+        $students = VRegistrationIncomplete::all();
+        if(!$students) return $this->errorRes('Aucun enfant sur cette liste, tout le monde est en ordre', 404);
+
+        return $this->successRes($students);
     }
 
     public function getStudentsPicture(Request $request)
@@ -205,7 +214,6 @@ class StudentController extends Controller
         $address = $request->input('address');
         if (!$address) $address = $student->Address;
         $newStudent = filter_var($request->input('newStudent'), FILTER_VALIDATE_BOOLEAN);
-        if (!$newStudent) $newStudent = $student->NewStudent;
 
         $rulesSigned = filter_var($request->input('rulesSigned'), FILTER_VALIDATE_BOOLEAN);
         $registrationFileFilled = filter_var($request->input('registrationFileFilled'), FILTER_VALIDATE_BOOLEAN);
