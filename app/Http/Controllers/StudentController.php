@@ -44,7 +44,7 @@ class StudentController extends Controller
 
     public function searchStudent(Request $request)
     {
-        $students = DB::table('vstudents')->where('Firstname', 'like', $request->get('name') . "%")->get();
+        $students = DB::table('vstudents')->where('Firstname', 'like', "%" . $request->get('name') . "%")->get();
 
         return $this->successRes($students);
     }
@@ -103,7 +103,7 @@ class StudentController extends Controller
     public function getRegistrationIncomplete()
     {
         $students = VRegistrationIncomplete::all();
-        if(!$students) return $this->errorRes('Aucun enfant sur cette liste, tout le monde est en ordre', 404);
+        if (!$students) return $this->errorRes('Aucun enfant sur cette liste, tout le monde est en ordre', 404);
 
         return $this->successRes($students);
     }
