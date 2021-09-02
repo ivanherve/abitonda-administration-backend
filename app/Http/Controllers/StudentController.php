@@ -66,7 +66,8 @@ class StudentController extends Controller
         $guitar = filter_var($request->input('guitar'), FILTER_VALIDATE_BOOLEAN);
         $danse = filter_var($request->input('danse'), FILTER_VALIDATE_BOOLEAN);
         $swimmingpool = filter_var($request->input('swimmingpool'), FILTER_VALIDATE_BOOLEAN);
-
+        $address = $request->input('address');
+        
         $classe = $request->input('Classe');
         if (!$classe) return $this->errorRes('Veuillez insérer une classe', 404);
         $picture = $request->input('Picture');
@@ -89,6 +90,7 @@ class StudentController extends Controller
             'ClasseId' => $classe,
             'Picture' => $picture,
             'SectorId' => $sector,
+            'Address' => $address,
             'InternalRulesSigned' => $rulesSigned,
             'RegistrationFileFilled' => $registrationFileFilled,
             'VaccinsFile' => $vaccinsFile,
