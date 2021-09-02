@@ -16,6 +16,6 @@ class VNeighborhood extends Model
      * @var array
      */
     protected $fillable = [
-        'SectorId', 'Neighborhood'
+        'SectorId', 'DistrictId', 'Neighborhood'
     ];
 }

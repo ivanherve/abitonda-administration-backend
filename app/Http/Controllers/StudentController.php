@@ -78,8 +78,8 @@ class StudentController extends Controller
         $neighborhood = $request->input('neighborhoodSelected');
         if (!$neighborhood) return $this->errorRes('Veuillez séléctionner un quartier', 404);
 
-        //return $this->debugRes($neighborhood);
-
+        $sector = VNeighborhood::all()->where('Neighborhood', '=', $neighborhood)->pluck('SectorId')->first();
+        
         $newStudent = Student::create([
             'Lastname' => strtoupper($lastname),
             'Firstname' => strtoupper($firstname),
@@ -88,6 +88,7 @@ class StudentController extends Controller
             'Transport' => $transport,
             'ClasseId' => $classe,
             'Picture' => $picture,
+            'SectorId' => $sector,
             'InternalRulesSigned' => $rulesSigned,
             'RegistrationFileFilled' => $registrationFileFilled,
             'VaccinsFile' => $vaccinsFile,
@@ -97,7 +98,11 @@ class StudentController extends Controller
             'Danse' => $danse
         ]);
 
-        return $this->successRes($newStudent);
+        if($newStudent){
+
+            return $this->successRes($newStudent);            
+        }
+        
     }
 
     public function getRegistrationIncomplete()
