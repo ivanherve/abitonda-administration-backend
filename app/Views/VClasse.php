@@ -16,6 +16,6 @@ class VClasse extends Model
      * @var array
      */
     protected $fillable = [
-        'ClasseId', 'Name', 'enabled', 'Teacher'
+        'ClasseId', 'Name', 'nbStudents', 'enabled', 'Teacher'
     ];
 }
