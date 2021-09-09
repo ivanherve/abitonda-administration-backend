@@ -350,4 +350,16 @@ class StudentController extends Controller
 
         return $this->debugRes($students);
     }
+
+    public function getNewStudents()
+    {
+        $students = VSoras::all()->where('NewStudent');
+        $arr = [];
+        //if(!$students) return $this->errorRes('Il n\'y a pas de nouveaux', 404);
+        foreach ($students as $key => $value) {
+            //return $this->debugRes([$key, $value]);
+            array_push($arr, $value);
+        }
+        return $this->successRes($arr);
+    }
 }
