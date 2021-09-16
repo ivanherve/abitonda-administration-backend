@@ -13,6 +13,8 @@ use App\Views\VRegistrationIncomplete;
 use App\Views\VSoras;
 use App\Views\VStudents;
 use App\Views\VTransport;
+use App\Views\VSchoolSite;
+use App\Views\VKinderGarden;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -172,6 +174,20 @@ class StudentController extends Controller
     public function getTransportList()
     {
         $students = VTransport::all();
+
+        return $this->successRes($students);
+    }
+
+    public function getSchoolSiteList()
+    {
+        $students = VSchoolSite::all();
+
+        return $this->successRes($students);
+    }
+
+    public function getKinderGardenSite()
+    {
+        $students = VKinderGarden::all();
 
         return $this->successRes($students);
     }

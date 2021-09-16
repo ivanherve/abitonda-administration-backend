@@ -45,6 +45,8 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->post('/studentspicture', 'StudentController@getStudentsPicture');
     $router->get('/studentsregistrationsincomplete', 'StudentController@getRegistrationIncomplete');
     $router->get('/newstudents', 'StudentController@getNewStudents');
+    $router->get('/schoolsite', 'StudentController@getSchoolSiteList');
+    $router->get('/kindergardensite', 'StudentController@getKinderGardenSite');
 
     // EMPLOYEE
     $router->get('/employees', 'EmployeeController@getEmployees');
