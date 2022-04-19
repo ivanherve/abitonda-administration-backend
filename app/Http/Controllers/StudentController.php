@@ -367,6 +367,21 @@ class StudentController extends Controller
         return $this->debugRes($students);
     }
 
+    public function BackToPreviousClass()
+    {
+        $students = Student::all();
+        if (!$students) return $this->errorRes('Il n\'existe pas d\'élève dans le système', 404);
+
+        $arr = [];
+
+        foreach ($students as $key => $value) {
+            //array_push($arr,['ClasseId' => ($value->ClasseId + 2)]);
+            $value->fill(['ClasseId' => ($value->ClasseId - 1), 'NewStudent' => 0])->save();
+        }
+
+        return $this->debugRes($students);
+    }
+
     public function getNewStudents()
     {
         $students = VSoras::all()->where('NewStudent');
