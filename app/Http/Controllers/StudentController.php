@@ -15,6 +15,7 @@ use App\Views\VStudents;
 use App\Views\VTransport;
 use App\Views\VSchoolSite;
 use App\Views\VKinderGarden;
+use App\Views\VMonthlyBirthday;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -167,6 +168,13 @@ class StudentController extends Controller
     public function getSorasList()
     {
         $students = VSoras::all();
+
+        return $this->successRes($students);
+    }
+
+    public function getMonthlyBirthday()
+    {
+        $students = VMonthlyBirthday::all();
 
         return $this->successRes($students);
     }

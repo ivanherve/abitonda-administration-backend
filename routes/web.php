@@ -27,6 +27,7 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     // STUDENTS
     $router->get('/students', 'StudentController@getStudents');
     $router->get('/soras', 'StudentController@getSorasList');
+    $router->get('/birthdaymonth', 'StudentController@getMonthlyBirthday');
     $router->get('/transport', 'StudentController@getTransportList');
     $router->get('/birthdaylistperclasse', 'StudentController@getBirthdayListPerClass');
     $router->get('/presencelistperclasse', 'StudentController@getPresenceListPerClasse');
@@ -42,6 +43,7 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/pastbday', 'StudentController@getPastBday');
     $router->get('/comingbday', 'StudentController@getComingBday');
     $router->get('/passtonextclass', 'StudentController@PassToNextClass');
+    $router->get('/backtopreviousclass', 'StudentController@BackToPreviousClass');
     $router->post('/studentspicture', 'StudentController@getStudentsPicture');
     $router->get('/studentsregistrationsincomplete', 'StudentController@getRegistrationIncomplete');
     $router->get('/newstudents', 'StudentController@getNewStudents');
