@@ -253,6 +253,7 @@ class StudentController extends Controller
         $guitar = filter_var($request->input('guitar'), FILTER_VALIDATE_BOOLEAN);
         $swimmingpool = filter_var($request->input('swimmingpool'), FILTER_VALIDATE_BOOLEAN);
         $danse = filter_var($request->input('danse'), FILTER_VALIDATE_BOOLEAN);
+        $sexe = filter_var($request->input('Sexe'), FILTER_VALIDATE_BOOLEAN);
 
         $classe = Classe::all()->where('Name', '=', $classe)->first();
         if ($classe) $classeId = $classe->ClasseId;
@@ -289,7 +290,8 @@ class StudentController extends Controller
             'Piano' => $piano,
             'Guitar' => $guitar,
             'Piscine' => $swimmingpool,
-            'Danse' => $danse
+            'Danse' => $danse,
+            'Sexe' => $sexe,
         ];
         /*  
         return $this->debugRes([
@@ -297,6 +299,7 @@ class StudentController extends Controller
             '$registered' => $registered,
             'Canteen' => $canteen,
             'Transport' => $transport,
+            'Sexe' => $sexe,
         ]);*/
 
         $student->fill($data)->save();
