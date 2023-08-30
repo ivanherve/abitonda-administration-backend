@@ -312,7 +312,7 @@ class StudentController extends Controller
 */
         $student->fill($data)->save();
 
-        return $this->successRes('Mis à jour réussi'); 
+        return $this->successRes('Mis à jour réussi '.$urubuto); 
     }
 
     public function getStudentParents(Request $request)
