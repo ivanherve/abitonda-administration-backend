@@ -300,7 +300,7 @@ class StudentController extends Controller
             'Danse' => $danse,
             'Sexe' => $sexe,
         ];
-         
+/*         
         return $this->debugRes([
             '$data' => $data,
             '$registered' => $registered,
@@ -309,10 +309,10 @@ class StudentController extends Controller
             'Sexe' => $sexe,
             'Urubuto' => $urubuto,
         ]);
-/*
+*/
         $student->fill($data)->save();
 
-        return $this->successRes('Mis à jour réussi'); */
+        return $this->successRes('Mis à jour réussi'); 
     }
 
     public function getStudentParents(Request $request)
