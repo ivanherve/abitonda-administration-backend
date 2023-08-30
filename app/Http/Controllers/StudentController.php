@@ -58,6 +58,8 @@ class StudentController extends Controller
         if (!$firstname) return $this->errorRes('Veuillez insérer un prénom', 404);
         $lastname = $request->input('Lastname');
         if (!$lastname) return $this->errorRes('Veuillez insérer un nom de famille', 404);
+        $urubuto = $request->input('Urubuto');
+        if (!$urubuto) return $this->errorRes('Veuillez insérer le code Urubuto de l\'enfant',404);
         $birthdate = $request->input('Birthdate');
         if (!$birthdate) return $this->errorRes('Veuillez insérer une date de naissance', 404);
         $canteen = filter_var($request->input('Canteen'), FILTER_VALIDATE_BOOLEAN);
@@ -84,9 +86,10 @@ class StudentController extends Controller
 
         $sector = VNeighborhood::all()->where('Neighborhood', '=', $neighborhood)->pluck('SectorId')->first();
         
-        $newStudent = Student::create([
+        $studentToCreate = [
             'Lastname' => strtoupper($lastname),
             'Firstname' => strtoupper($firstname),
+            'Urubuto' => $urubuto,
             'Birthdate' => $birthdate,
             'Canteen' => $canteen,
             'Transport' => $transport,
@@ -101,10 +104,11 @@ class StudentController extends Controller
             'Guitar' => $guitar,
             'Piscine' => $swimmingpool,
             'Danse' => $danse
-        ]);
+        ];
+        #return $this->debugRes($studentToCreate);
+        $newStudent = Student::create($studentToCreate);
 
         if($newStudent){
-
             return $this->successRes($newStudent);            
         }
         
@@ -235,6 +239,8 @@ class StudentController extends Controller
         $classe = $request->input('classe');
         $classeId = 0;
         if (!$classe) $classeId = $student->ClasseId;
+        $urubuto = $request->input('Urubuto');
+        if (!$urubuto) $urubuto = $student->Urubuto;
         $allergies = $request->input('allergies');
         if (!$allergies) $allergies = $student->allergies;
         $canteen = filter_var($request->input('Canteen'), FILTER_VALIDATE_BOOLEAN);
@@ -275,6 +281,7 @@ class StudentController extends Controller
             'Lastname' => strtoupper($lastname),
             'Firstname' => strtoupper($firstname),
             'Birthdate' => $birthdate,
+            'Urubuto' => $urubuto,
             'Canteen' => ($canteen != $student->Canteen) && $canteen,
             'Transport' => ($transport != $student->Transport) && $transport,
             'Picture' => $picture,
