@@ -300,18 +300,19 @@ class StudentController extends Controller
             'Danse' => $danse,
             'Sexe' => $sexe,
         ];
-        /*  
+         
         return $this->debugRes([
             '$data' => $data,
             '$registered' => $registered,
             'Canteen' => $canteen,
             'Transport' => $transport,
             'Sexe' => $sexe,
-        ]);*/
-
+            'Urubuto' => $urubuto,
+        ]);
+/*
         $student->fill($data)->save();
 
-        return $this->successRes('Mis à jour réussi');/**/
+        return $this->successRes('Mis à jour réussi'); */
     }
 
     public function getStudentParents(Request $request)

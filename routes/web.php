@@ -25,6 +25,7 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/signout', 'AuthController@signOut');
 
     // STUDENTS
+    $router->get('/searchstudent', 'StudentController@searchStudent');
     $router->get('/students', 'StudentController@getStudents');
     $router->get('/soras', 'StudentController@getSorasList');
     $router->get('/birthdaymonth', 'StudentController@getMonthlyBirthday');
@@ -32,43 +33,46 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/birthdaylistperclasse', 'StudentController@getBirthdayListPerClass');
     $router->get('/presencelistperclasse', 'StudentController@getPresenceListPerClasse');
     $router->get('/students/pagination', 'StudentController@getTenStudents');
-    $router->post('/student/create', 'StudentController@addStudent');
-    $router->post('/student/createmany', 'StudentController@addStudentCSV');
     $router->get('/sclasse', 'StudentController@getStudentPerClasse');
-    $router->post('/editstudent', 'StudentController@editStudent');
-    $router->get('/searchstudent', 'StudentController@searchStudent');
     $router->get('/neighborhoods', 'StudentController@getNeighborhoods');
     $router->get('/numbstudentperneighborhoods', 'StudentController@getNumberStudentPerNeighborhood');
     $router->get('/numbstudentpersector', 'StudentController@getNumberStudentPerSector');
     $router->get('/pastbday', 'StudentController@getPastBday');
     $router->get('/comingbday', 'StudentController@getComingBday');
-    $router->get('/passtonextclass', 'StudentController@PassToNextClass');
-    $router->get('/backtopreviousclass', 'StudentController@BackToPreviousClass');
     $router->post('/studentspicture', 'StudentController@getStudentsPicture');
     $router->get('/studentsregistrationsincomplete', 'StudentController@getRegistrationIncomplete');
     $router->get('/newstudents', 'StudentController@getNewStudents');
     $router->get('/schoolsite', 'StudentController@getSchoolSiteList');
     $router->get('/kindergardensite', 'StudentController@getKinderGardenSite');
 
+    $router->post('/student/create', 'StudentController@addStudent');
+    $router->post('/student/createmany', 'StudentController@addStudentCSV');
+    $router->post('/editstudent', 'StudentController@editStudent');
+    $router->get('/passtonextclass', 'StudentController@PassToNextClass');
+    $router->get('/backtopreviousclass', 'StudentController@BackToPreviousClass');
+
     // EMPLOYEE
     $router->get('/employees', 'EmployeeController@getEmployees');
     $router->get('/banks', 'EmployeeController@getBanks');
     $router->get('/jobs', 'EmployeeController@getJobs');
+
     $router->post('/addemployee', 'EmployeeController@addEmployee');
     $router->post('/editemployee', 'EmployeeController@EditEmployee');
 
     // CLASSES
     $router->get('/classes', 'ClasseController@getClasses');
+    $router->get('/getlistcontactperclasse', 'ClasseController@getListContactPerClasse');
+
     $router->post('/addteacher', 'ClasseController@AddTeacher');
     $router->post('/removeteacher', 'ClasseController@RemoveTeacher');
     $router->post('/addassistant', 'ClasseController@AddAssistant');
     $router->post('/removeassistant', 'ClasseController@RemoveAssistant');
-    $router->get('/getlistcontactperclasse', 'ClasseController@getListContactPerClasse');
 
     // PARENTS
     $router->get('/parents', 'StudentController@getStudentParents');
-    $router->post('/parents/create', 'ParentController@addParentOfOneStudent');
     $router->get('/listparents', 'ParentController@getListParent');
+    
+    $router->post('/parents/create', 'ParentController@addParentOfOneStudent');
     $router->post('/removelinkparent', 'ParentController@removeLinkParent');
     $router->post('/editparent', 'ParentController@editParent');
 
