@@ -16,6 +16,6 @@ class VSoras extends Model
      * @var array
      */
     protected $fillable = [
-        'StudentId', 'Lastname', 'Firstname', 'Birthdate', 'Classe'
+        'StudentId', 'Lastname', 'Firstname', 'Birthdate', 'Classe', 'Urubuto'
     ];
 }

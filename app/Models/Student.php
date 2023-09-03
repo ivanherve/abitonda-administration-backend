@@ -20,7 +20,7 @@ class Student extends Model
         'InternalRulesSigned',
         'RegistrationFileFilled',
         'VaccinsFile',
-        'Piano',
+        'Paid',
         'Guitar',
         'Piscine',
         'Danse'

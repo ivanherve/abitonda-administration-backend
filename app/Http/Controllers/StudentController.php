@@ -67,10 +67,7 @@ class StudentController extends Controller
         $rulesSigned = filter_var($request->input('rulesSigned'), FILTER_VALIDATE_BOOLEAN);
         $registrationFileFilled = filter_var($request->input('registrationFileFilled'), FILTER_VALIDATE_BOOLEAN);
         $vaccinsFile = filter_var($request->input('vaccinsFile'), FILTER_VALIDATE_BOOLEAN);
-        $piano = filter_var($request->input('piano'), FILTER_VALIDATE_BOOLEAN);
-        $guitar = filter_var($request->input('guitar'), FILTER_VALIDATE_BOOLEAN);
-        $danse = filter_var($request->input('danse'), FILTER_VALIDATE_BOOLEAN);
-        $swimmingpool = filter_var($request->input('swimmingpool'), FILTER_VALIDATE_BOOLEAN);
+        $paid = filter_var($request->input('paid'), FILTER_VALIDATE_BOOLEAN);
         $address = $request->input('address');
         
         $classe = $request->input('Classe');
@@ -100,10 +97,7 @@ class StudentController extends Controller
             'InternalRulesSigned' => $rulesSigned,
             'RegistrationFileFilled' => $registrationFileFilled,
             'VaccinsFile' => $vaccinsFile,
-            'Piano' => $piano,
-            'Guitar' => $guitar,
-            'Piscine' => $swimmingpool,
-            'Danse' => $danse
+            'Paid' => $paid
         ];
         #return $this->debugRes($studentToCreate);
         $newStudent = Student::create($studentToCreate);
@@ -255,10 +249,7 @@ class StudentController extends Controller
         $rulesSigned = filter_var($request->input('rulesSigned'), FILTER_VALIDATE_BOOLEAN);
         $registrationFileFilled = filter_var($request->input('registrationFileFilled'), FILTER_VALIDATE_BOOLEAN);
         $vaccinsFile = filter_var($request->input('vaccinsFile'), FILTER_VALIDATE_BOOLEAN);
-        $piano = filter_var($request->input('piano'), FILTER_VALIDATE_BOOLEAN);
-        $guitar = filter_var($request->input('guitar'), FILTER_VALIDATE_BOOLEAN);
-        $swimmingpool = filter_var($request->input('swimmingpool'), FILTER_VALIDATE_BOOLEAN);
-        $danse = filter_var($request->input('danse'), FILTER_VALIDATE_BOOLEAN);
+        $paid = filter_var($request->input('paid'), FILTER_VALIDATE_BOOLEAN);
         $sexe = filter_var($request->input('Sexe'), FILTER_VALIDATE_BOOLEAN);
 
         $classe = Classe::all()->where('Name', '=', $classe)->first();
@@ -294,10 +285,7 @@ class StudentController extends Controller
             'InternalRulesSigned' => $rulesSigned,
             'RegistrationFileFilled' => $registrationFileFilled,
             'VaccinsFile' => $vaccinsFile,
-            'Piano' => $piano,
-            'Guitar' => $guitar,
-            'Piscine' => $swimmingpool,
-            'Danse' => $danse,
+            'Paid' => $paid,
             'Sexe' => $sexe,
         ];
 /*         
