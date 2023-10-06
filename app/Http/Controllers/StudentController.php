@@ -16,6 +16,10 @@ use App\Views\VTransport;
 use App\Views\VSchoolSite;
 use App\Views\VKinderGarden;
 use App\Views\VMonthlyBirthday;
+use App\Views\VTransportCT1;
+use App\Views\VTransportCT2;
+use App\Views\VTransportOT1;
+use App\Views\VTransportOT2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -59,7 +63,7 @@ class StudentController extends Controller
         $lastname = $request->input('Lastname');
         if (!$lastname) return $this->errorRes('Veuillez insérer un nom de famille', 404);
         $urubuto = $request->input('Urubuto');
-        if (!$urubuto) return $this->errorRes('Veuillez insérer le code Urubuto de l\'enfant',404);
+        if (!$urubuto) return $this->errorRes('Veuillez insérer le code Urubuto de l\'enfant', 404);
         $birthdate = $request->input('Birthdate');
         if (!$birthdate) return $this->errorRes('Veuillez insérer une date de naissance', 404);
         $canteen = filter_var($request->input('Canteen'), FILTER_VALIDATE_BOOLEAN);
@@ -69,7 +73,7 @@ class StudentController extends Controller
         $vaccinsFile = filter_var($request->input('vaccinsFile'), FILTER_VALIDATE_BOOLEAN);
         $paid = filter_var($request->input('paid'), FILTER_VALIDATE_BOOLEAN);
         $address = $request->input('address');
-        
+
         $classe = $request->input('Classe');
         if (!$classe) return $this->errorRes('Veuillez insérer une classe', 404);
         $picture = $request->input('Picture');
@@ -82,7 +86,7 @@ class StudentController extends Controller
         if (!$neighborhood) return $this->errorRes('Veuillez séléctionner un quartier', 404);
 
         $sector = VNeighborhood::all()->where('Neighborhood', '=', $neighborhood)->pluck('SectorId')->first();
-        
+
         $studentToCreate = [
             'Lastname' => strtoupper($lastname),
             'Firstname' => strtoupper($firstname),
@@ -102,10 +106,9 @@ class StudentController extends Controller
         #return $this->debugRes($studentToCreate);
         $newStudent = Student::create($studentToCreate);
 
-        if($newStudent){
-            return $this->successRes($newStudent);            
+        if ($newStudent) {
+            return $this->successRes($newStudent);
         }
-        
     }
 
     public function getRegistrationIncomplete()
@@ -288,7 +291,7 @@ class StudentController extends Controller
             'Paid' => $paid,
             'Sexe' => $sexe,
         ];
-/*         
+        /*         
         return $this->debugRes([
             '$data' => $data,
             '$registered' => $registered,
@@ -300,7 +303,7 @@ class StudentController extends Controller
 */
         $student->fill($data)->save();
 
-        return $this->successRes('Mis à jour réussi!'); 
+        return $this->successRes('Mis à jour réussi!');
     }
 
     public function getStudentParents(Request $request)
@@ -399,5 +402,33 @@ class StudentController extends Controller
             array_push($arr, $value);
         }
         return $this->successRes($arr);
+    }
+
+    public function getTransportOT1()
+    {
+        $students = VTransportOT1::all();
+        if (!$students) return $this->errorRes('Aucun élève ne prend ce transport', 404);
+        else return $this->successRes($students);
+    }
+
+    public function getTransportOT2()
+    {
+        $students = VTransportOT2::all();
+        if (!$students) return $this->errorRes('Aucun élève ne prend ce transport', 404);
+        else return $this->successRes($students);
+    }
+
+    public function getTransportCT1()
+    {
+        $students = VTransportCT1::all();
+        if (!$students) return $this->errorRes('Aucun élève ne prend ce transport', 404);
+        else return $this->successRes($students);
+    }
+
+    public function getTransportCT2()
+    {
+        $students = VTransportCT2::all();
+        if (!$students) return $this->errorRes('Aucun élève ne prend ce transport', 404);
+        else return $this->successRes($students);
     }
 }
