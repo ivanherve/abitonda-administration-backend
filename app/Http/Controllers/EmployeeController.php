@@ -136,6 +136,8 @@ class EmployeeController extends Controller
         $nbRssb = $data->nbRSSB;
         if (!$nbRssb) $nbRssb = $employee->NbRSSB;
 
+        $isEmployed = filter_var($request->input('isEmployed'), FILTER_VALIDATE_BOOLEAN);
+
         $positions = $data->positions;
         $documents = $data->documents;
 
@@ -149,6 +151,7 @@ class EmployeeController extends Controller
             'NbRSSB' => $nbRssb,
             'positions' => $positions,
             'documents' => $documents,
+            'isEmployed' => $isEmployed,
         ];
 
         $positionsToRemove = $data->positionsToRemove;
