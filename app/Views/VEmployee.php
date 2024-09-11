@@ -16,6 +16,6 @@ class VEmployee extends Model
      * @var array
      */
     protected $fillable = [
-        'EmployeeId', 'Firstname', 'Lastname', 'Email', 'Bank', 'BankAccount', 'NbRSSB', 'NbDays'
+        'EmployeeId', 'Firstname', 'Lastname', 'Email', 'Bank', 'BankAccount', 'NbRSSB', 'NbDays', 'isEmployed'
     ];
 }
