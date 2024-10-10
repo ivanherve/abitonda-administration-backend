@@ -431,4 +431,11 @@ class StudentController extends Controller
         if (!$students) return $this->errorRes('Aucun élève ne prend ce transport', 404);
         else return $this->successRes($students);
     }
+
+    public function getCanteen()
+    {
+        $students = VSoras::where('Canteen', true)->get();
+        if (!$students) return $this->errorRes("Aucun élève n'est à la cantine", 404);
+        else return $this->successRes($students);
+    }
 }
