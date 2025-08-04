@@ -23,6 +23,6 @@ class Student extends Model
         'Paid',
         'Guitar',
         'Piscine',
-        'Danse'
+        'Danse', 'FamilyId', 'PointDeRamassage'
     ];
 }

@@ -16,6 +16,6 @@ class Parents extends Model
      * @var array
      */
     protected $fillable = [
-        'ParentId', 'Lastname', 'Firstname', 'PhoneNumb', 'Email', 'Address', 'LinkChild'
+        'ParentId', 'Lastname', 'Firstname', 'PhoneNumb', 'Email', 'Address', 'LinkChild', 'FamilyId'
     ];
 }
