@@ -184,7 +184,9 @@ class StudentController extends Controller
         $students = VStudents::with(['fees.term'])->get();
 
         $transformed = $students->map(function ($student) {
-            $student->fees = $student->fees->map(fn($fee) => $this->transformFeeWithBirthday($fee, $student->Birthdate));
+            $student->fees = $student->fees->map(function ($fee) use ($student) {
+                return $this->transformFeeWithBirthday($fee, $student->Birthdate);
+            });
             return $student;
         });
 
@@ -198,7 +200,9 @@ class StudentController extends Controller
         $students = VStudents::with(['fees.term'])->paginate($limit);
 
         $transformedCollection = $students->getCollection()->map(function ($student) {
-            $student->fees = $student->fees->map(fn($fee) => $this->transformFeeWithBirthday($fee, $student->Birthdate));
+            $student->fees = $student->fees->map(function ($fee) use ($student) {
+                return $this->transformFeeWithBirthday($fee, $student->Birthdate);
+            });
             return $student;
         });
 
@@ -216,7 +220,9 @@ class StudentController extends Controller
             ->get();
 
         $transformed = $students->map(function ($student) {
-            $student->fees = $student->fees->map(fn($fee) => $this->transformFeeWithBirthday($fee, $student->Birthdate));
+            $student->fees = $student->fees->map(function ($fee) use ($student) {
+                return $this->transformFeeWithBirthday($fee, $student->Birthdate);
+            });
             return $student;
         });
 
