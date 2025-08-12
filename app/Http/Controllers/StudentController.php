@@ -119,12 +119,22 @@ class StudentController extends Controller
 
         $familyChildren = $familyChildren->map(function ($child, $index) {
             $position = $index + 1;
-            $positionLabel = match ($index) {
-                0 => 'Aîné(e)',
-                1 => 'Deuxième enfant',
-                2 => 'Troisième enfant',
-                default => ($position . 'e enfant'),
-            };
+
+            // Remplacement de match par switch
+            switch ($index) {
+                case 0:
+                    $positionLabel = 'Aîné(e)';
+                    break;
+                case 1:
+                    $positionLabel = 'Deuxième enfant';
+                    break;
+                case 2:
+                    $positionLabel = 'Troisième enfant';
+                    break;
+                default:
+                    $positionLabel = $position . 'e enfant';
+                    break;
+            }
 
             $reduction = 0;
             switch ($index) {
@@ -135,20 +145,27 @@ class StudentController extends Controller
                     $reduction = 15;
                     break;
                 default:
-                    if ($index >= 3)
+                    if ($index >= 3) {
                         $reduction = 20;
+                    }
+                    break;
             }
 
             $child->PositionIndex = $position;
             $child->PositionLabel = $positionLabel;
             $child->ReductionPourcentage = $reduction;
 
-            $child->fees = $child->fees->map(fn($fee) => $this->transformFeeWithBirthday($fee, $child->Birthdate));
+            $child->fees = $child->fees->map(function ($fee) use ($child) {
+                return $this->transformFeeWithBirthday($fee, $child->Birthdate);
+            });
 
             return $child;
         });
 
-        $siblings = $familyChildren->filter(fn($c) => $c->StudentId !== $student->StudentId)->values();
+        $siblings = $familyChildren->filter(function ($c) use ($student) {
+            return $c->StudentId !== $student->StudentId;
+        })->values();
+
         $studentPosition = $familyChildren->firstWhere('StudentId', $student->StudentId);
 
         return [
