@@ -3,6 +3,7 @@
 namespace App\Views;
 
 
+use App\Models\Fee;
 use Illuminate\Database\Eloquent\Model;
 
 class VStudents extends Model
@@ -16,11 +17,27 @@ class VStudents extends Model
      * @var array
      */
     protected $fillable = [
-        'StudentId', 'Lastname', 
-        'Sexe', 'Firstname', 
-        'Birthdate', 
-        'Canteen', 'Transport', 
-        'Picture', 'Classe', 
-        'Urubuto', 'FamilyId', 'PointDeRamassage'
+        'StudentId',
+        'Lastname',
+        'Sexe',
+        'Firstname',
+        'Birthdate',
+        'Canteen',
+        'Transport',
+        'Picture',
+        'Classe',
+        'Urubuto',
+        'FamilyId',
+        'PointDeRamassage'
     ];
+
+    public function fees()
+    {
+        return $this->belongsToMany(
+            VFees::class,
+            'FeeStudent',
+            'StudentId',
+            'FeeId'
+        )->withTimestamps();
+    }
 }

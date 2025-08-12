@@ -50,6 +50,8 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/passtonextclass', 'StudentController@PassToNextClass');
     $router->get('/backtopreviousclass', 'StudentController@BackToPreviousClass');
     $router->get('/canteen', 'StudentController@getCanteen');
+    // Route pour récupérer les frères et sœurs
+    $router->get('/students/{studentId}/siblings', 'StudentController@getSiblings');
 
     // EMPLOYEE
     $router->get('/employees', 'EmployeeController@getEmployees');

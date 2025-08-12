@@ -22,6 +22,7 @@ use App\Views\VTransportOT1;
 use App\Views\VTransportOT2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StudentController extends Controller
 {
@@ -35,25 +36,235 @@ class StudentController extends Controller
         $this->middleware('auth');
     }
 
+    private function transformFeeWithBirthday($fee, $birthdate)
+    {
+        if ($fee->Name !== 'Anniversaire') {
+            return [
+                'FeesId' => $fee->FeesId,
+                'Name' => $fee->Name,
+                'Amount' => $fee->Amount,
+                'IsDynamic' => $fee->IsDynamic,
+                'Term' => optional($fee->term)->Code,
+            ];
+        }
+
+        $birthMonth = $this->getAnniversaireMonthName($birthdate);
+        $birthTerm = $this->getBirthTerm($birthdate);
+
+        return [
+            'FeesId' => $fee->FeesId,
+            'Name' => "Anniversaire ({$birthMonth})",
+            'Amount' => $fee->Amount,
+            'IsDynamic' => $fee->IsDynamic,
+            'Term' => $birthTerm,
+        ];
+    }
+
+    private function getBirthTerm(string $dateString): ?string
+    {
+        $month = (int) date('n', strtotime($dateString));
+        if (in_array($month, [7, 8, 9, 10, 11, 12]))
+            return 'T1'; // juil à déc
+        if ($month >= 1 && $month <= 3)
+            return 'T2'; // janv à mars
+        if ($month >= 4 && $month <= 6)
+            return 'T3'; // avr à juin
+        return null;
+    }
+
+    private function getAnniversaireMonthName(string $dateString): string
+    {
+        $months = [
+            1 => 'janvier',
+            2 => 'février',
+            3 => 'mars',
+            4 => 'avril',
+            5 => 'mai',
+            6 => 'juin',
+            7 => 'juillet',
+            8 => 'août',
+            9 => 'septembre',
+            10 => 'octobre',
+            11 => 'novembre',
+            12 => 'décembre'
+        ];
+
+        $month = (int) date('n', strtotime($dateString));
+        if (in_array($month, [7, 8]))
+            return 'septembre'; // juillet/août => septembre
+
+        return $months[$month] ?? 'septembre';
+    }
+
+    private function getSiblingsData($studentId)
+    {
+        $student = VStudents::findOrFail($studentId);
+
+        if (empty($student->FamilyId)) {
+            return [
+                'siblings' => collect(),
+                'studentPosition' => [
+                    'StudentId' => $student->StudentId,
+                    'PositionIndex' => 1,
+                    'PositionLabel' => 'Enfant unique',
+                    'ReductionPourcentage' => 0,
+                ],
+            ];
+        }
+
+        $familyChildren = VStudents::with(['fees.term'])
+            ->where('FamilyId', $student->FamilyId)
+            ->orderBy('Birthdate')
+            ->get();
+
+        $familyChildren = $familyChildren->map(function ($child, $index) {
+            $position = $index + 1;
+            $positionLabel = match ($index) {
+                0 => 'Aîné(e)',
+                1 => 'Deuxième enfant',
+                2 => 'Troisième enfant',
+                default => ($position . 'e enfant'),
+            };
+
+            $reduction = 0;
+            switch ($index) {
+                case 1:
+                    $reduction = 10;
+                    break;
+                case 2:
+                    $reduction = 15;
+                    break;
+                default:
+                    if ($index >= 3)
+                        $reduction = 20;
+            }
+
+            $child->PositionIndex = $position;
+            $child->PositionLabel = $positionLabel;
+            $child->ReductionPourcentage = $reduction;
+
+            $child->fees = $child->fees->map(fn($fee) => $this->transformFeeWithBirthday($fee, $child->Birthdate));
+
+            return $child;
+        });
+
+        $siblings = $familyChildren->filter(fn($c) => $c->StudentId !== $student->StudentId)->values();
+        $studentPosition = $familyChildren->firstWhere('StudentId', $student->StudentId);
+
+        return [
+            'siblings' => $siblings,
+            'studentPosition' => [
+                'StudentId' => $studentPosition->StudentId,
+                'PositionIndex' => $studentPosition->PositionIndex,
+                'PositionLabel' => $studentPosition->PositionLabel,
+                'ReductionPourcentage' => $studentPosition->ReductionPourcentage,
+            ],
+        ];
+    }
+
     public function getStudents()
     {
-        $students = VStudents::all();
+        $students = VStudents::with(['fees.term'])->get();
 
-        return $this->successRes($students);
+        $transformed = $students->map(function ($student) {
+            $student->fees = $student->fees->map(fn($fee) => $this->transformFeeWithBirthday($fee, $student->Birthdate));
+            return $student;
+        });
+
+        return $this->successRes($transformed);
     }
 
     public function getTenStudents(Request $request)
     {
-        $students = DB::table('vstudents')->orderBy('Firstname', 'asc')->paginate($request->get('limit'));
+        $limit = $request->get('limit', 10);
+
+        $students = VStudents::with(['fees.term'])->paginate($limit);
+
+        $transformedCollection = $students->getCollection()->map(function ($student) {
+            $student->fees = $student->fees->map(fn($fee) => $this->transformFeeWithBirthday($fee, $student->Birthdate));
+            return $student;
+        });
+
+        $students->setCollection($transformedCollection);
 
         return $this->successRes($students);
     }
 
     public function searchStudent(Request $request)
     {
-        $students = DB::table('vstudents')->where('Firstname', 'like', "%" . $request->get('name') . "%")->get();
+        $name = $request->get('name');
 
-        return $this->successRes($students);
+        $students = VStudents::with(['fees.term'])
+            ->where('Firstname', 'like', "%" . $name . "%")
+            ->get();
+
+        $transformed = $students->map(function ($student) {
+            $student->fees = $student->fees->map(fn($fee) => $this->transformFeeWithBirthday($fee, $student->Birthdate));
+            return $student;
+        });
+
+        return $this->successRes($transformed);
+    }
+
+    public function getSiblings($studentId)
+    {
+        $data = $this->getSiblingsData($studentId);
+        return $this->successRes($data);
+    }
+
+    public function getStudentParents(Request $request)
+    {
+        $studentId = $request->get('studentid');
+
+        if (!$studentId) {
+            $parents = Parents::all();
+            return $this->successRes($parents);
+        }
+
+        $student = DB::table('students')
+            ->select('StudentId', 'FamilyId', 'Birthdate')
+            ->where('StudentId', $studentId)
+            ->first();
+
+        if (!$student) {
+            return $this->errorRes("Élève introuvable", 404);
+        }
+
+        // Appeler getSiblings pour récupérer la réduction de position
+        $siblingsData = $this->getSiblingsData($studentId);
+        // On récupère la réduction de position (extraction depuis la réponse)
+        $studentPositionReduction = 0;
+        if (isset($siblingsData['studentPosition']['ReductionPourcentage'])) {
+            $studentPositionReduction = $siblingsData['studentPosition']['ReductionPourcentage'];
+        }
+
+        $cadet = DB::table('students')
+            ->where('FamilyId', $student->FamilyId)
+            ->orderByDesc('Birthdate')
+            ->first();
+
+        $isCadet = $cadet && $cadet->StudentId == $student->StudentId;
+
+        $parents = DB::select('call get_student_parents(?)', [$studentId]);
+
+        foreach ($parents as &$parent) {
+            $sponsored = DB::table('students')
+                ->select('StudentId', 'Firstname', 'Lastname', 'Birthdate')
+                ->where('SponsoringParent', $parent->ParentId)
+                ->get();
+
+            $parent->SponsoredChildren = $sponsored;
+
+            $sponsorshipReduction = 0;
+            if ($isCadet && $sponsored->count() > 0) {
+                $sponsorshipReduction = $sponsored->count() * 5;
+            }
+
+            // Ajout de la réduction de position + réduction par parrainage
+            $parent->ReductionPourcentage = $studentPositionReduction + $sponsorshipReduction;
+        }
+
+        return $this->successRes($parents);
     }
 
     public function addStudent(Request $request)
@@ -345,16 +556,6 @@ class StudentController extends Controller
         $student->fill($data)->save();
 
         return $this->successRes('Mis à jour réussi!');
-    }
-    public function getStudentParents(Request $request)
-    {
-        $parents = Parents::all();
-        $studentId = $request->get('studentid');
-        if ($studentId) {
-            $parents = DB::select('call get_student_parents(?)', [$studentId]);
-            return $this->successRes($parents);
-        }
-        return $this->successRes($parents);
     }
 
     public function getStudentPerClasse(Request $request)
