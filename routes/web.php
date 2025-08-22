@@ -50,8 +50,16 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/passtonextclass', 'StudentController@PassToNextClass');
     $router->get('/backtopreviousclass', 'StudentController@BackToPreviousClass');
     $router->get('/canteen', 'StudentController@getCanteen');
+    $router->post('/student/update-transport', 'StudentController@updateTransport');
+
     // Route pour récupérer les frères et sœurs
     $router->get('/students/{studentId}/siblings', 'StudentController@getSiblings');
+
+    // FEES
+    $router->get('/fees', 'FeeController@index');
+    $router->post('fees', 'FeeController@store');
+    $router->post('fees/{id}', 'FeeController@update');
+    $router->delete('fees/{id}', 'FeeController@destroy');
 
     // EMPLOYEE
     $router->get('/employees', 'EmployeeController@getEmployees');
@@ -73,7 +81,7 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     // PARENTS
     $router->get('/parents', 'StudentController@getStudentParents');
     $router->get('/listparents', 'ParentController@getListParent');
-    
+
     $router->post('/parents/create', 'ParentController@addParentOfOneStudent');
     $router->post('/removelinkparent', 'ParentController@removeLinkParent');
     $router->post('/editparent', 'ParentController@editParent');
@@ -88,5 +96,24 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/ot2transport', 'StudentController@getTransportOT2');
     $router->get('/ct1transport', 'StudentController@getTransportCT1');
     $router->get('/ct2transport', 'StudentController@getTransportCT2');
+
+    $router->get('/bus', 'BusController@index');
+    $router->get('/bus/{id}', 'BusController@show');
+    $router->post('/bus', 'BusController@store');
+    $router->put('/bus/{id}', 'BusController@update');
+    $router->delete('/bus/{id}', 'BusController@destroy');
+    $router->get('/bus/{id}/students', 'BusController@getBusLinesStudents');
+
+    $router->get('/pickup', 'PickupController@index');
+    $router->get('/pickup/{id}', 'PickupController@show');
+    $router->post('/pickup', 'PickupController@store');
+    $router->put('/pickup/{id}', 'PickupController@update');
+    $router->delete('/pickup/{id}', 'PickupController@destroy');
+
+    $router->get('/student-pickup', 'StudentPickupController@index');
+    $router->post('/student-pickup', 'StudentPickupController@store');
+    $router->put('/student-pickup/{studentId}/{directionId}/{dayOfWeek}', 'StudentPickupController@update');
+    $router->delete('/student-pickup/{studentId}/{directionId}/{dayOfWeek}', 'StudentPickupController@destroy');
+
 
 });

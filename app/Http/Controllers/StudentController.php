@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Classe;
+use App\Models\PickupPoint;
 use App\Models\Student;
 use App\Models\Parents;
+use App\Models\StudentPickup;
 use App\Views\VComingBday;
 use App\Views\VNeighborhood;
 use App\Views\VNumberStudentPerNeighborhood;
@@ -715,4 +717,77 @@ class StudentController extends Controller
         else
             return $this->successRes($students);
     }
+
+    /**
+     * Met à jour les points de ramassage et horaires d'un élève
+     */
+
+    public function updateTransport(Request $request)
+    {
+        $studentId = $request->input('studentId');
+        $settings = $request->input('settings');
+
+        if (!$studentId || !is_array($settings)) {
+            return $this->debugRes([
+                'studentId' => $studentId,
+                'settings' => $settings,
+                'isArray' => is_array($settings)
+            ]);
+        }
+
+        try {
+            foreach ($settings as $setting) {
+                $day = $setting['day'] ?? null;
+                $goPointName = $setting['goPoint'] ?? null;
+                $goTime = $setting['goTime'] ?? null;
+                $returnPointName = $setting['returnPoint'] ?? null;
+                $returnTime = $setting['returnTime'] ?? null;
+
+                if (!$day)
+                    continue;
+
+                // Aller
+                if ($goPointName) {
+                    $goPickup = PickupPoint::where('Name', $goPointName)->first();
+                    if ($goPickup) {
+                        StudentPickup::updateOrCreate(
+                            [
+                                'StudentId' => $studentId,
+                                'DayOfWeek' => $day,
+                                'DirectionId' => 1
+                            ],
+                            [
+                                'PickupId' => $goPickup->PickupId,
+                                'DepartureTime' => $goTime ?? '16:30'
+                            ]
+                        );
+                    }
+                }
+
+                // Retour
+                if ($returnPointName) {
+                    $returnPickup = PickupPoint::where('Name', $returnPointName)->first();
+                    if ($returnPickup) {
+                        StudentPickup::updateOrCreate(
+                            [
+                                'StudentId' => $studentId,
+                                'DayOfWeek' => $day,
+                                'DirectionId' => 2
+                            ],
+                            [
+                                'PickupId' => $returnPickup->PickupId,
+                                'DepartureTime' => $returnTime ?? '16:30'
+                            ]
+                        );
+                    }
+                }
+            }
+
+            return $this->successRes('Transports mis à jour avec succès');
+
+        } catch (\Exception $e) {
+            return $this->errorRes('Erreur lors de la mise à jour : ' . $e->getMessage(), 500);
+        }
+    }
+
 }
