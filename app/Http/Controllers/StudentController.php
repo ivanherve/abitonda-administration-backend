@@ -784,7 +784,6 @@ class StudentController extends Controller
                     'go_point_name' => $goPointName,
                     'return_point_name' => $returnPointName,
                     'student_id' => $studentId,
-                    'settings' => $settings,
                     'GoPickup' => $goPickup ?? null,
                     'ReturnPickup' => $returnPickup ?? null,
                     'message' => 'Mise à jour réussie',
