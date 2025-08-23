@@ -9,15 +9,28 @@ class PickupPoint extends Model
     protected $table = 'pickup_point';
     protected $primaryKey = 'PickupId';
     public $timestamps = false;
-    protected $fillable = ['LineId', 'Name', 'Latitude', 'Longitude', 'PositionOrder'];
+    protected $fillable = [
+        'LineId',
+        'Name',
+        'Latitude',
+        'Longitude',
+        'PositionOrder',
+        'ArrivalGo',
+        'ArrivalReturn'
+    ];
 
     public function line()
     {
         return $this->belongsTo(BusLine::class, 'LineId', 'LineId');
     }
 
-    public function studentPickups()
+    public function students()
     {
-        return $this->hasMany(StudentPickup::class, 'PickupId', 'PickupId');
+        return $this->belongsToMany(
+            Student::class,
+            'student_pickup',   // table pivot
+            'PickupId',    // clé étrangère vers pickup_point
+            'StudentId',// clé étrangère vers student
+        )->withPivot('DayOfWeek', 'DayOfWeek', 'DirectionId');
     }
 }

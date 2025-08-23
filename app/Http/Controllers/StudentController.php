@@ -758,7 +758,7 @@ class StudentController extends Controller
                             ],
                             [
                                 'PickupId' => $goPickup->PickupId,
-                                'DepartureTime' => $goTime ?? '16:30'
+                                // 'DepartureTime' => $goTime ?? '16:30'
                             ]
                         );
                     }
@@ -776,7 +776,7 @@ class StudentController extends Controller
                             ],
                             [
                                 'PickupId' => $returnPickup->PickupId,
-                                'DepartureTime' => $returnTime ?? '16:30'
+                                // 'DepartureTime' => $returnTime ?? '16:30'
                             ]
                         );
                     }

@@ -42,6 +42,11 @@ class Student extends Model
         'PointDeRamassage'
     ];
 
+    public function classe()
+    {
+        return $this->belongsTo(Classe::class, 'ClasseId', 'ClasseId');
+    }
+
     public function fees()
     {
         return $this->belongsToMany(Fee::class, 'FeeStudent', 'StudentId', 'FeeId')
@@ -52,7 +57,17 @@ class Student extends Model
     // relation vers le parent qui parraine cet élève
     public function sponsoringParent()
     {
-        return $this->belongsTo(Parent::class, 'SponsoringParent', 'ParentId');
+        return $this->belongsTo(parent::class, 'SponsoringParent', 'ParentId');
+    }
+
+    public function pickupPoints()
+    {
+        return $this->belongsToMany(
+            PickupPoint::class,
+            'student_pickup',
+            'StudentId',
+            'PickupId'
+        );
     }
 
 }

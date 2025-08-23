@@ -7,24 +7,75 @@ use Illuminate\Http\Request;
 
 class PickupController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $pickups = PickupPoint::with('line')->orderBy('Name')->get();
+        if ($request->has('directionId') == 2) {
+            // Si le paramètre directionId est présent, on peut gérer la logique ici si nécessaire
+            $query = PickupPoint::with('line')->orderBy('ArrivalReturn');
+            // Par exemple, filtrer les points de ramassage en fonction de la direction
+        } else {
+            $query = PickupPoint::with('line')->orderBy('ArrivalGo');
+        }
+
+        // si le client appelle /api/pickup?lineId=3
+        if ($request->has('lineId')) {
+            $query->where('LineId', $request->query('lineId'));
+        }
+
+        $pickups = $query->orderBy('Name', 'asc')->get();
+
         return $this->successRes($pickups);
     }
 
     public function show($id)
     {
-        $pickup = PickupPoint::with('line')->find($id);
-        if (!$pickup) return $this->errorRes('Point de ramassage non trouvé', 404);
-        return $this->successRes($pickup);
+        $pickups = PickupPoint::with('line')
+            ->where('LineId', $id)
+            ->orderBy('Name', 'asc')
+            ->get();
+
+        if ($pickups->isEmpty()) {
+            return $this->errorRes('Aucun point de ramassage trouvé', 404);
+        }
+
+        return $this->successRes($pickups);
     }
 
     public function store(Request $request)
     {
         try {
-            $pickup = PickupPoint::create($request->all());
+            $name = $request->input('Name');
+            $latitude = $request->input('Latitude');
+            $longitude = $request->input('Longitude');
+            $lineId = $request->input('LineId');
+            $arrivalGo = $request->input('ArrivalGo');
+            $arrivalReturn = $request->input('ArrivalReturn');
+
+            // Vérifier que les champs obligatoires sont présents
+            if (!$name)
+                return $this->errorRes("Attribut manquant: Name", 400);
+            if (!$lineId)
+                return $this->errorRes("Attribut manquant: LineId", 400);
+            if (!$arrivalGo)
+                return $this->errorRes("Attribut manquant: ArrivalGo", 400);
+            if (!$arrivalReturn)
+                return $this->errorRes("Attribut manquant: ArrivalReturn", 400);
+
+            $data = [
+                'Name' => $name,
+                'Latitude' => $latitude,
+                'Longitude' => $longitude,
+                'LineId' => $lineId,
+                'ArrivalGo' => $arrivalGo,
+                'ArrivalReturn' => $arrivalReturn,
+            ];
+
+            // return $this->debugRes($data);
+
+            $pickup = PickupPoint::create($data);
+
             return $this->successRes($pickup, 201);
+
         } catch (\Exception $e) {
             return $this->errorRes($e->getMessage(), 400);
         }
@@ -33,7 +84,8 @@ class PickupController extends Controller
     public function update(Request $request, $id)
     {
         $pickup = PickupPoint::find($id);
-        if (!$pickup) return $this->errorRes('Point de ramassage non trouvé', 404);
+        if (!$pickup)
+            return $this->errorRes('Point de ramassage non trouvé', 404);
 
         $pickup->update($request->all());
         return $this->successRes($pickup);
@@ -42,7 +94,8 @@ class PickupController extends Controller
     public function destroy($id)
     {
         $pickup = PickupPoint::find($id);
-        if (!$pickup) return $this->errorRes('Point de ramassage non trouvé', 404);
+        if (!$pickup)
+            return $this->errorRes('Point de ramassage non trouvé', 404);
 
         $pickup->delete();
         return $this->successRes('Point de ramassage supprimé', 204);

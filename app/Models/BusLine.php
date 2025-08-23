@@ -16,8 +16,4 @@ class BusLine extends Model
         return $this->hasMany(PickupPoint::class, 'LineId', 'LineId');
     }
 
-    public function studentPickups()
-    {
-        return $this->hasMany(StudentPickup::class, 'LineId', 'LineId');
-    }
 }

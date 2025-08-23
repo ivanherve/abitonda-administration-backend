@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusLine;
+use App\Models\PickupPoint;
+use App\Models\Student;
+use App\Models\StudentPickup;
 use Illuminate\Http\Request;
 
 class BusController extends Controller
@@ -50,41 +53,62 @@ class BusController extends Controller
         $line->delete();
         return $this->successRes('Ligne supprimée', 204);
     }
-
     public function getBusLinesStudents($id)
     {
-        $line = BusLine::find($id);
+        // Récupérer les paramètres depuis la query string
+        $date = request()->query('date', date('Y-m-d')); // par défaut aujourd'hui
+        $directionId = request()->query('directionId', 1); // par défaut aller
+
+        // Numéro du jour de la semaine (1 = lundi, 7 = dimanche)
+        $dayOfWeek = date('N', strtotime($date));
+
+        // Charger la ligne avec pickups et élèves
+        $line = BusLine::with('pickups.students')->find($id);
+
         if (!$line) {
             return $this->errorRes('Ligne non trouvée', 404);
         }
 
-        // Récupérer le paramètre direction depuis la query string
-        $directionParam = request()->query('direction', 'go'); // défaut = 'go'
+        // Filtrer les élèves par jour et direction
+        $pickups = $line->pickups->map(function ($pickup) use ($dayOfWeek, $directionId) {
+            $studentsForDay = $pickup->students
+                ->filter(
+                    fn($student) =>
+                    $student->pivot->DayOfWeek == $dayOfWeek &&
+                    $student->pivot->DirectionId == $directionId
+                )
+                ->map(
+                    fn($student) => collect($student)
+                        ->except(['Picture'])
+                        ->put('Classe', $student->classe?->Name) // ajoute le nom de la classe
+                        ->put('PickupPoint', $pickup->Name)
+                )
+                ->values();
 
-        // Traduire 'go'/'return' en DirectionId selon ta table Direction
-        // Par exemple, si DirectionId = 1 pour aller, 2 pour retour
-        $directionId = $directionParam === 'go' ? 1 : 2;
-
-        // Charger les affectations élèves pour cette ligne et cette direction
-        $students = $line->studentPickups()
-            ->where('DirectionId', $directionId)
-            ->with(['student', 'pickupPoint'])
-            ->get();
-
-        // Formater les données pour le frontend
-        $formatted = $students->map(function ($s) {
             return [
-                'StudentId' => $s->student->StudentId,
-                'name' => $s->student->Firstname . ' ' . $s->student->Lastname,
-                'classe' => $s->student->Classe ?? 'N/A',
-                'pickup_point' => [
-                    'Name' => $s->pickupPoint->Name
-                ],
-                'LineId' => $s->LineId,
-                'Direction' => $s->DirectionId,
+                'PickupId' => $pickup->PickupId,
+                'Name' => $pickup->Name,
+                'Location' => $pickup->Location,
+                'Arrival' => $directionId == 1 ? $pickup->ArrivalGo : $pickup->ArrivalReturn,
+                'students' => $studentsForDay,
             ];
         });
 
-        return $this->successRes($formatted);
+
+        // Tous les élèves uniques pour la ligne, le jour et la direction
+        $students = $pickups
+            ->flatMap(fn($pickup) => $pickup['students'])
+            ->unique('StudentId')
+            ->values();
+
+        $lineData = collect($line)->except(['pickups']);
+        $lineData = $lineData->put('pickups', $pickups);
+
+        $data = [
+            'line' => $lineData,
+            'students' => $students,
+        ];
+
+        return $this->successRes($data);
     }
 }
