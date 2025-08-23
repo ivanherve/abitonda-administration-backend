@@ -781,7 +781,9 @@ class StudentController extends Controller
                 }
             }
 
-            return $this->successRes($updatedPickups); // Retourne maintenant tous les enregistrements
+            return $this->debugRes(['update_pickup' => $updatedPickups, 'go_point_name' => $goPointName, 'return_point_name' => $returnPointName]);
+
+            // return $this->successRes($updatedPickups);
 
         } catch (\Exception $e) {
             return $this->errorRes('Erreur lors de la mise à jour : ' . $e->getMessage(), 500);
