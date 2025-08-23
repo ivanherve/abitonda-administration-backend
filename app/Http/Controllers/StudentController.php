@@ -750,7 +750,7 @@ class StudentController extends Controller
                 if ($goPointName) {
                     $goPickup = PickupPoint::where('Name', $goPointName)->first();
                     if ($goPickup) {
-                        StudentPickup::updateOrCreate(
+                        $studentPickup = StudentPickup::updateOrCreate(
                             [
                                 'StudentId' => $studentId,
                                 'DayOfWeek' => $day,
@@ -767,7 +767,7 @@ class StudentController extends Controller
                 if ($returnPointName) {
                     $returnPickup = PickupPoint::where('Name', $returnPointName)->first();
                     if ($returnPickup) {
-                        StudentPickup::updateOrCreate(
+                        $studentPickup = StudentPickup::updateOrCreate(
                             [
                                 'StudentId' => $studentId,
                                 'DayOfWeek' => $day,
@@ -781,7 +781,7 @@ class StudentController extends Controller
                 }
             }
 
-            return $this->successRes('Transports mis à jour avec succès');
+            return $this->successRes($studentPickup);
 
         } catch (\Exception $e) {
             return $this->errorRes('Erreur lors de la mise à jour : ' . $e->getMessage(), 500);
