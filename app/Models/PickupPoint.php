@@ -30,7 +30,7 @@ class PickupPoint extends Model
             Student::class,
             'student_pickup',   // table pivot
             'PickupId',    // clé étrangère vers pickup_point
-            'StudentId',// clé étrangère vers student
-        )->withPivot('DayOfWeek', 'DayOfWeek', 'DirectionId');
+            'StudentId' // clé étrangère vers student
+        )->withPivot('DayOfWeek', 'DirectionId');
     }
 }
