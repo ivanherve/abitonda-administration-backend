@@ -10,7 +10,7 @@ class StudentPickup extends Model
     public $incrementing = false; // Clé primaire composite
     public $timestamps = false;
     protected $primaryKey = null; // car composite
-    protected $fillable = ['StudentId', 'PickupId', 'LineId', 'DirectionId', 'DayOfWeek', 'DepartureTime'];
+    protected $fillable = ['StudentId', 'PickupId', 'LineId', 'DirectionId', 'DayOfWeek'];
 
     public function student()
     {
