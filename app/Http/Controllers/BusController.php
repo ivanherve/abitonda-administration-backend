@@ -72,17 +72,16 @@ class BusController extends Controller
         // Filtrer les élèves par jour et direction
         $pickups = $line->pickups->map(function ($pickup) use ($dayOfWeek, $directionId) {
             $studentsForDay = $pickup->students
-                ->filter(
-                    fn($student) =>
-                    $student->pivot->DayOfWeek == $dayOfWeek &&
-                    $student->pivot->DirectionId == $directionId
-                )
-                ->map(
-                    fn($student) => collect($student)
+                ->filter(function ($student) use ($dayOfWeek, $directionId) {
+                    return $student->pivot->DayOfWeek == $dayOfWeek &&
+                        $student->pivot->DirectionId == $directionId;
+                })
+                ->map(function ($student) use ($pickup) {
+                    return collect($student)
                         ->except(['Picture'])
-                        ->put('Classe', $student->classe?->Name) // ajoute le nom de la classe
-                        ->put('PickupPoint', $pickup->Name)
-                )
+                        ->put('Classe', isset($student->classe) ? $student->classe->Name : null) // version sans ?->
+                        ->put('PickupPoint', $pickup->Name);
+                })
                 ->values();
 
             return [
@@ -94,10 +93,11 @@ class BusController extends Controller
             ];
         });
 
-
         // Tous les élèves uniques pour la ligne, le jour et la direction
         $students = $pickups
-            ->flatMap(fn($pickup) => $pickup['students'])
+            ->flatMap(function ($pickup) {
+                return $pickup['students'];
+            })
             ->unique('StudentId')
             ->values();
 
