@@ -776,12 +776,23 @@ class StudentController extends Controller
                             ],
                             ['PickupId' => $returnPickup->PickupId]
                         );
-                        $updatedPickups[] = $studentPickup;
+
                     }
                 }
+                array_push($updatedPickups, [
+                    'update_pickup' => $updatedPickups,
+                    'go_point_name' => $goPointName,
+                    'return_point_name' => $returnPointName,
+                    'student_id' => $studentId,
+                    'settings' => $settings,
+                    'GoPickup' => $goPickup ?? null,
+                    'ReturnPickup' => $returnPickup ?? null,
+                    'message' => 'Mise à jour réussie',
+                    'day' => $day,
+                ]);
             }
 
-            return $this->debugRes(['update_pickup' => $updatedPickups, 'go_point_name' => $goPointName, 'return_point_name' => $returnPointName]);
+            return $this->debugRes($updatedPickups);
 
             // return $this->successRes($updatedPickups);
 
