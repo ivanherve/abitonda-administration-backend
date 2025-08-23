@@ -735,6 +735,8 @@ class StudentController extends Controller
             ]);
         }
 
+        $updatedPickups = []; // Tableau pour stocker tous les enregistrements
+
         try {
             foreach ($settings as $setting) {
                 $day = $setting['day'] ?? null;
@@ -756,10 +758,9 @@ class StudentController extends Controller
                                 'DayOfWeek' => $day,
                                 'DirectionId' => 1
                             ],
-                            [
-                                'PickupId' => $goPickup->PickupId
-                            ]
+                            ['PickupId' => $goPickup->PickupId]
                         );
+                        $updatedPickups[] = $studentPickup;
                     }
                 }
 
@@ -773,19 +774,17 @@ class StudentController extends Controller
                                 'DayOfWeek' => $day,
                                 'DirectionId' => 2
                             ],
-                            [
-                                'PickupId' => $returnPickup->PickupId
-                            ]
+                            ['PickupId' => $returnPickup->PickupId]
                         );
+                        $updatedPickups[] = $studentPickup;
                     }
                 }
             }
 
-            return $this->successRes($studentPickup);
+            return $this->successRes($updatedPickups); // Retourne maintenant tous les enregistrements
 
         } catch (\Exception $e) {
             return $this->errorRes('Erreur lors de la mise à jour : ' . $e->getMessage(), 500);
         }
     }
-
 }
