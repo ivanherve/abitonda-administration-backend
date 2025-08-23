@@ -791,9 +791,9 @@ class StudentController extends Controller
                 ]);
             }
 
-            return $this->debugRes($updatedPickups);
+            // return $this->debugRes($updatedPickups);
 
-            // return $this->successRes($updatedPickups);
+            return $this->successRes($updatedPickups);
 
         } catch (\Exception $e) {
             return $this->errorRes('Erreur lors de la mise à jour : ' . $e->getMessage(), 500);
