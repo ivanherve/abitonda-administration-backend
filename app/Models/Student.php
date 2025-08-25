@@ -67,7 +67,7 @@ class Student extends Model
             'student_pickup',
             'StudentId',
             'PickupId'
-        );
+        )->withPivot('DayOfWeek', 'DirectionId');
     }
 
 }

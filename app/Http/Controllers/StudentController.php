@@ -802,9 +802,10 @@ class StudentController extends Controller
 
     public function getStudentPickups($id, Request $request)
     {
-        $date = $request->query('date', date('Y-m-d'));
-        $dayOfWeek = date('N', strtotime($date));
-        $directionId = $request->query('directionId', 1);
+        // $date = $request->query('date'); // peut être null si non fourni
+        $directionId = $request->query('directionId'); // peut être null
+
+        $dayOfWeek = $request->query('day');
 
         $student = Student::with(['pickupPoints.line'])
             ->find($id);
@@ -813,12 +814,48 @@ class StudentController extends Controller
             return $this->errorRes("Élève non trouvé", 404);
         }
 
+        // On utilise un filter avec une fonction anonyme "ancienne syntaxe"
         $pickups = $student->pickupPoints
             ->filter(function ($pickup) use ($dayOfWeek, $directionId) {
-                return $pickup->pivot->DayOfWeek == $dayOfWeek &&
-                    $pickup->pivot->DirectionId == $directionId;
+                $validDay = !$dayOfWeek || $pickup->pivot->DayOfWeek == $dayOfWeek;
+                $validDirection = !$directionId || $pickup->pivot->DirectionId == $directionId;
+                return $validDay && $validDirection;
             })
             ->values();
+
+        $goPickups = [];
+        $returnPickups = [];
+
+        foreach ($pickups as $pickup) {
+            // Choisir le tableau cible en fonction de la direction
+            if ($pickup->pivot->DirectionId == 1) {
+                $directionArray = &$goPickups;
+            } else {
+                $directionArray = &$returnPickups;
+            }
+
+            $pickupId = $pickup->PickupId;
+
+            if (!isset($directionArray[$pickupId])) {
+                // Première fois qu’on rencontre cet arrêt
+                $directionArray[$pickupId] = [
+                    'id' => $pickup->PickupId,
+                    'name' => $pickup->Name,
+                    'line' => $pickup->line,
+                    'days' => [],
+                    'latitude' => $pickup->Latitude,
+                    'longitude' => $pickup->Longitude
+                ];
+            }
+
+            // Ajouter le jour correspondant
+            $directionArray[$pickupId]['days'][] = $pickup->pivot->DayOfWeek;
+        }
+
+        $pickups = [
+            'goPickups' => array_values($goPickups),
+            'returnPickups' => array_values($returnPickups),
+        ];
 
         return $this->successRes($pickups);
     }
