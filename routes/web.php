@@ -51,6 +51,7 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/backtopreviousclass', 'StudentController@BackToPreviousClass');
     $router->get('/canteen', 'StudentController@getCanteen');
     $router->post('/student/update-transport', 'StudentController@updateTransport');
+    $router->get('/student/{id}/pickups', 'StudentController@getStudentPickups');
 
     // Route pour récupérer les frères et sœurs
     $router->get('/students/{studentId}/siblings', 'StudentController@getSiblings');

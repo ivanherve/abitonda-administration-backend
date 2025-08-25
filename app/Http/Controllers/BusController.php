@@ -12,15 +12,38 @@ class BusController extends Controller
 {
     public function index()
     {
-        $lines = BusLine::with('pickups')->get();
+        $lines = BusLine::with('pickups.students')->get();
+
+        // Ajouter le nombre d'élèves uniques par ligne
+        $lines = $lines->map(function ($line) {
+            $students = $line->pickups
+                ->flatMap(function ($pickup) {
+                    return $pickup->students;
+                })
+                ->unique('StudentId');
+
+            return collect($line)->put('nbStudents', $students->count());
+        });
+
         return $this->successRes($lines);
     }
 
     public function show($id)
     {
-        $line = BusLine::with('pickups')->find($id);
-        if (!$line)
+        $line = BusLine::with('pickups.students')->find($id);
+
+        if (!$line) {
             return $this->errorRes('Ligne non trouvée', 404);
+        }
+
+        $students = $line->pickups
+            ->flatMap(function ($pickup) {
+                return $pickup->students;
+            })
+            ->unique('StudentId');
+
+        $line = collect($line)->put('nbStudents', $students->count());
+
         return $this->successRes($line);
     }
 
@@ -107,6 +130,7 @@ class BusController extends Controller
         $data = [
             'line' => $lineData,
             'students' => $students,
+            'nbStudents' => $students->count(),
         ];
 
         return $this->successRes($data);

@@ -9,27 +9,42 @@ class PickupController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->has('directionId') == 2) {
-            // Si le paramètre directionId est présent, on peut gérer la logique ici si nécessaire
-            $query = PickupPoint::with('line')->orderBy('ArrivalReturn');
-            // Par exemple, filtrer les points de ramassage en fonction de la direction
+        $directionId = $request->query('directionId', 1);
+        $date = $request->query('date', date('Y-m-d'));
+        $dayOfWeek = date('N', strtotime($date)); // 1=lundi ... 7=dimanche
+
+        if ($directionId == 2) {
+            $query = PickupPoint::with(['line', 'students'])->orderBy('ArrivalReturn');
         } else {
-            $query = PickupPoint::with('line')->orderBy('ArrivalGo');
+            $query = PickupPoint::with(['line', 'students'])->orderBy('ArrivalGo');
         }
 
-        // si le client appelle /api/pickup?lineId=3
         if ($request->has('lineId')) {
             $query->where('LineId', $request->query('lineId'));
         }
 
         $pickups = $query->orderBy('Name', 'asc')->get();
 
+        $pickups = $pickups->map(function ($pickup) use ($dayOfWeek, $directionId) {
+            // filtrer les élèves selon jour + direction
+            $students = $pickup->students->filter(function ($student) use ($dayOfWeek, $directionId) {
+                return $student->pivot->DayOfWeek == $dayOfWeek &&
+                    $student->pivot->DirectionId == $directionId;
+            });
+
+            return collect($pickup)->put('nbStudents', $students->unique('StudentId')->count());
+        });
+
         return $this->successRes($pickups);
     }
 
-    public function show($id)
+    public function show($id, Request $request)
     {
-        $pickups = PickupPoint::with('line')
+        $directionId = $request->query('directionId', 1);
+        $date = $request->query('date', date('Y-m-d'));
+        $dayOfWeek = date('N', strtotime($date));
+
+        $pickups = PickupPoint::with(['line', 'students'])
             ->where('LineId', $id)
             ->orderBy('Name', 'asc')
             ->get();
@@ -37,6 +52,15 @@ class PickupController extends Controller
         if ($pickups->isEmpty()) {
             return $this->errorRes('Aucun point de ramassage trouvé', 404);
         }
+
+        $pickups = $pickups->map(function ($pickup) use ($dayOfWeek, $directionId) {
+            $students = $pickup->students->filter(function ($student) use ($dayOfWeek, $directionId) {
+                return $student->pivot->DayOfWeek == $dayOfWeek &&
+                    $student->pivot->DirectionId == $directionId;
+            });
+
+            return collect($pickup)->put('nbStudents', $students->unique('StudentId')->count());
+        });
 
         return $this->successRes($pickups);
     }

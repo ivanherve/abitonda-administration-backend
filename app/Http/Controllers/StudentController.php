@@ -799,4 +799,28 @@ class StudentController extends Controller
             return $this->errorRes('Erreur lors de la mise à jour : ' . $e->getMessage(), 500);
         }
     }
+
+    public function getStudentPickups($id, Request $request)
+    {
+        $date = $request->query('date', date('Y-m-d'));
+        $dayOfWeek = date('N', strtotime($date));
+        $directionId = $request->query('directionId', 1);
+
+        $student = Student::with(['pickupPoints.line'])
+            ->find($id);
+
+        if (!$student) {
+            return $this->errorRes("Élève non trouvé", 404);
+        }
+
+        $pickups = $student->pickupPoints
+            ->filter(function ($pickup) use ($dayOfWeek, $directionId) {
+                return $pickup->pivot->DayOfWeek == $dayOfWeek &&
+                    $pickup->pivot->DirectionId == $directionId;
+            })
+            ->values();
+
+        return $this->successRes($pickups);
+    }
+
 }
