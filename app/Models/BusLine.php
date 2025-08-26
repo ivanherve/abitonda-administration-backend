@@ -15,5 +15,13 @@ class BusLine extends Model
     {
         return $this->hasMany(PickupPoint::class, 'LineId', 'LineId');
     }
+    public function driver()
+    {
+        return $this->belongsTo(Employee::class, 'DriverId', 'EmployeeId');
+    }
 
+    public function assistant()
+    {
+        return $this->belongsTo(Employee::class, 'AssistantId', 'EmployeeId');
+    }
 }

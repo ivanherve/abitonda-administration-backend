@@ -104,6 +104,7 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->put('/bus/{id}', 'BusController@update');
     $router->delete('/bus/{id}', 'BusController@destroy');
     $router->get('/bus/{id}/students', 'BusController@getBusLinesStudents');
+    $router->post('/bus/busteam', 'BusController@updateTeam');
 
     $router->get('/pickup', 'PickupController@index');
     $router->get('/pickup/{id}', 'PickupController@show');

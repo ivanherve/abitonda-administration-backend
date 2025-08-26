@@ -18,4 +18,8 @@ class Employee extends Model
     protected $fillable = [
         'EmployeeId', 'Firstname', 'Lastname', 'Email', 'BankId', 'BankAccount', 'NbRSSB', 'NbDays', 'isEmployed'
     ];
+
+    public function BusLine(){
+        $this->belongsTo(BusLine::class, 'DriverId', 'EmployeeId');
+    }
 }
