@@ -21,7 +21,9 @@ class BusController extends Controller
 
         $lines = $lines->map(function ($line) {
             $students = $line->pickups
-                ->flatMap(fn($pickup) => $pickup->students)
+                ->flatMap(function ($pickup) {
+                    return $pickup->students;
+                })
                 ->unique('StudentId');
 
             return [
@@ -51,7 +53,9 @@ class BusController extends Controller
         }
 
         $students = $line->pickups
-            ->flatMap(fn($pickup) => $pickup->students)
+            ->flatMap(function ($pickup) {
+                return $pickup->students;
+            })
             ->unique('StudentId')
             ->map(function ($student) {
                 return [
@@ -69,11 +73,13 @@ class BusController extends Controller
             'nbStudents' => $students->count(),
             'driverName' => $line->driver ? $line->driver->Firstname . ' ' . $line->driver->Lastname : null,
             'assistantName' => $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null,
-            'pickups' => $line->pickups->map(fn($pickup) => [
-                'PickupId' => $pickup->PickupId,
-                'Name' => $pickup->Name,
-                'Location' => $pickup->Location
-            ]),
+            'pickups' => $line->pickups->map(function ($pickup) {
+                return [
+                    'PickupId' => $pickup->PickupId,
+                    'Name' => $pickup->Name,
+                    'Location' => $pickup->Location
+                ];
+            }),
         ];
 
         return $this->successRes([
@@ -125,23 +131,25 @@ class BusController extends Controller
             'pickups.students.classe:id,Name'
         ])->find($id);
 
-        if (!$line)
+        if (!$line) {
             return $this->errorRes('Ligne non trouvée', 404);
+        }
 
         $pickups = $line->pickups->map(function ($pickup) use ($dayOfWeek, $directionId) {
             $studentsForDay = $pickup->students
-                ->filter(
-                    fn($student) =>
-                    $student->pivot->DayOfWeek == $dayOfWeek &&
-                    $student->pivot->DirectionId == $directionId
-                )
-                ->map(fn($student) => [
-                    'StudentId' => $student->StudentId,
-                    'Firstname' => $student->Firstname,
-                    'Lastname' => $student->Lastname,
-                    'Classe' => $student->classe->Name ?? null,
-                    'PickupPoint' => $pickup->Name
-                ])
+                ->filter(function ($student) use ($dayOfWeek, $directionId) {
+                    return $student->pivot->DayOfWeek == $dayOfWeek &&
+                        $student->pivot->DirectionId == $directionId;
+                })
+                ->map(function ($student) use ($pickup) { // <-- ajouter $pickup dans use
+                    return [
+                        'StudentId' => $student->StudentId,
+                        'Firstname' => $student->Firstname,
+                        'Lastname' => $student->Lastname,
+                        'Classe' => $student->classe->Name ?? null,
+                        'PickupPoint' => $pickup->Name
+                    ];
+                })
                 ->values();
 
             return [
@@ -153,7 +161,9 @@ class BusController extends Controller
             ];
         });
 
-        $students = $pickups->flatMap(fn($p) => $p['students'])->unique('StudentId')->values();
+        $students = $pickups->flatMap(function ($p) {
+            return $p['students'];
+        })->unique('StudentId')->values();
 
         $lineData = [
             'LineId' => $line->LineId,
