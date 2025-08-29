@@ -12,18 +12,25 @@ class BusController extends Controller
 {
     public function index()
     {
-        $lines = BusLine::with(['pickups.students', 'driver', 'assistant'])->get();
+        $lines = BusLine::with([
+            'pickups.students:id,StudentId,Firstname,Lastname,ClasseId',
+            'driver:id,Firstname,Lastname',
+            'assistant:id,Firstname,Lastname',
+            'pickups:id,BusLineId,Name,Location' // uniquement les colonnes nécessaires
+        ])->get();
 
         $lines = $lines->map(function ($line) {
             $students = $line->pickups
-                ->flatMap(function ($pickup) {
-                    return $pickup->students;
-                })
+                ->flatMap(fn($pickup) => $pickup->students)
                 ->unique('StudentId');
 
-            return collect($line)->put('nbStudents', $students->count())
-                ->put('driverName', $line->driver ? $line->driver->Firstname . ' ' . $line->driver->Lastname : null)
-                ->put('assistantName', $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null); // nom du chauffeur
+            return [
+                'LineId' => $line->LineId,
+                'Name' => $line->Name,
+                'nbStudents' => $students->count(),
+                'driverName' => $line->driver ? $line->driver->Firstname . ' ' . $line->driver->Lastname : null,
+                'assistantName' => $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null,
+            ];
         });
 
         return $this->successRes($lines);
@@ -31,22 +38,48 @@ class BusController extends Controller
 
     public function show($id)
     {
-        $line = BusLine::with(['pickups.students', 'driver', 'assistant'])->find($id);
+        $line = BusLine::with([
+            'pickups.students:id,StudentId,Firstname,Lastname,ClasseId',
+            'pickups:id,BusLineId,Name,Location',
+            'driver:id,Firstname,Lastname',
+            'assistant:id,Firstname,Lastname',
+            'pickups.students.classe:id,Name'
+        ])->find($id);
 
         if (!$line) {
             return $this->errorRes('Ligne non trouvée', 404);
         }
 
         $students = $line->pickups
-            ->flatMap(function ($pickup) {
-                return $pickup->students;
+            ->flatMap(fn($pickup) => $pickup->students)
+            ->unique('StudentId')
+            ->map(function ($student) {
+                return [
+                    'StudentId' => $student->StudentId,
+                    'Firstname' => $student->Firstname,
+                    'Lastname' => $student->Lastname,
+                    'Classe' => $student->classe->Name ?? null
+                ];
             })
-            ->unique('StudentId');
+            ->values();
 
-        $line = collect($line)->put('nbStudents', $students->count())
-            ->put('driverName', $line->driver ? $line->driver->Name : null);
+        $lineData = [
+            'LineId' => $line->LineId,
+            'Name' => $line->Name,
+            'nbStudents' => $students->count(),
+            'driverName' => $line->driver ? $line->driver->Firstname . ' ' . $line->driver->Lastname : null,
+            'assistantName' => $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null,
+            'pickups' => $line->pickups->map(fn($pickup) => [
+                'PickupId' => $pickup->PickupId,
+                'Name' => $pickup->Name,
+                'Location' => $pickup->Location
+            ]),
+        ];
 
-        return $this->successRes($line);
+        return $this->successRes([
+            'line' => $lineData,
+            'students' => $students
+        ]);
     }
 
     public function store(Request $request)
@@ -80,38 +113,36 @@ class BusController extends Controller
     }
     public function getBusLinesStudents($id)
     {
-        // Récupérer les paramètres depuis la query string
-        $date = request()->query('date', date('Y-m-d')); // par défaut aujourd'hui
-        $directionId = request()->query('directionId', 1); // par défaut Aller
-
-        // Numéro du jour de la semaine (1 = lundi, 7 = dimanche)
+        $date = request()->query('date', date('Y-m-d'));
+        $directionId = request()->query('directionId', 1);
         $dayOfWeek = date('N', strtotime($date));
 
-        // Charger la ligne avec ses pickups, étudiants et le chauffeur
-        $line = BusLine::with(['pickups.students', 'driver', 'assistant'])->find($id);
+        $line = BusLine::with([
+            'pickups.students:id,StudentId,Firstname,Lastname,ClasseId',
+            'pickups:id,BusLineId,Name,Location,ArrivalGo,ArrivalReturn',
+            'driver:id,Firstname,Lastname',
+            'assistant:id,Firstname,Lastname',
+            'pickups.students.classe:id,Name'
+        ])->find($id);
 
-        // Vérifier si la ligne existe
-        if (!$line) {
+        if (!$line)
             return $this->errorRes('Ligne non trouvée', 404);
-        }
 
-        // Filtrer les élèves pour chaque point de ramassage selon le jour et la direction
         $pickups = $line->pickups->map(function ($pickup) use ($dayOfWeek, $directionId) {
             $studentsForDay = $pickup->students
-                ->filter(function ($student) use ($dayOfWeek, $directionId) {
-                    // Garder uniquement les étudiants correspondant au jour et à la direction
-                    return $student->pivot->DayOfWeek == $dayOfWeek &&
-                        $student->pivot->DirectionId == $directionId;
-                })
-                ->map(function ($student) use ($pickup) {
-                    // Créer une collection de l'étudiant sans l'image
-                    // Ajouter le nom de la classe et le nom du point de ramassage
-                    return collect($student)
-                        ->except(['Picture'])
-                        ->put('Classe', isset($student->classe) ? $student->classe->Name : null)
-                        ->put('PickupPoint', $pickup->Name);
-                })
-                ->values(); // réindexer le tableau des étudiants
+                ->filter(
+                    fn($student) =>
+                    $student->pivot->DayOfWeek == $dayOfWeek &&
+                    $student->pivot->DirectionId == $directionId
+                )
+                ->map(fn($student) => [
+                    'StudentId' => $student->StudentId,
+                    'Firstname' => $student->Firstname,
+                    'Lastname' => $student->Lastname,
+                    'Classe' => $student->classe->Name ?? null,
+                    'PickupPoint' => $pickup->Name
+                ])
+                ->values();
 
             return [
                 'PickupId' => $pickup->PickupId,
@@ -122,35 +153,28 @@ class BusController extends Controller
             ];
         });
 
-        // Tous les étudiants uniques pour cette ligne, le jour et la direction
-        $students = $pickups
-            ->flatMap(function ($pickup) {
-                return $pickup['students'];
-            })
-            ->unique('StudentId')
-            ->values();
+        $students = $pickups->flatMap(fn($p) => $p['students'])->unique('StudentId')->values();
 
-        // Créer une collection pour la ligne en excluant les pickups originaux
-        $lineData = collect($line)->except(['pickups']);
-        // Ajouter les points de ramassage filtrés
-        $lineData = $lineData->put('pickups', $pickups)
-            ->put('driverName', $line->driver ? $line->driver->Firstname . ' ' . $line->driver->Lastname : null) // nom du chauffeur
-            ->put('assistantName', $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null); // nom du chauffeur
+        $lineData = [
+            'LineId' => $line->LineId,
+            'Name' => $line->Name,
+            'pickups' => $pickups,
+            'driverName' => $line->driver ? $line->driver->Firstname . ' ' . $line->driver->Lastname : null,
+            'assistantName' => $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null,
+        ];
 
-        // Préparer les données finales à retourner
-        $data = [
+        return $this->successRes([
             'line' => $lineData,
             'students' => $students,
             'nbStudents' => $students->count(),
-        ];
-
-        // Retourner la réponse au format JSON avec succès
-        return $this->successRes($data);
+        ]);
     }
+
     public function updateTeam(Request $request)
     {
         $lineId = $request->input('LineId');
-        if(!$lineId) return $this->errorRes("Veuillez insérer un bus", 404);
+        if (!$lineId)
+            return $this->errorRes("Veuillez insérer un bus", 404);
         $line = BusLine::find($lineId);
         if (!$line) {
             return $this->errorRes('Ligne non trouvée', 404);
