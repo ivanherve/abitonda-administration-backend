@@ -13,11 +13,16 @@ class PickupController extends Controller
         $date = $request->query('date', date('Y-m-d'));
         $dayOfWeek = date('N', strtotime($date)); // 1=lundi ... 7=dimanche
 
-        if ($directionId == 2) {
-            $query = PickupPoint::with(['line', 'students'])->orderBy('ArrivalReturn');
-        } else {
-            $query = PickupPoint::with(['line', 'students'])->orderBy('ArrivalGo');
-        }
+        // Charger les pickups avec leur ligne et les students
+        $query = PickupPoint::with([
+            'line',
+            'students' => function ($q) {
+                // Exclure le champ Picture
+                $q->select('StudentId', 'Firstname', 'Lastname', 'OtherField1', 'OtherField2');
+            }
+        ]);
+
+        $query = ($directionId == 2) ? $query->orderBy('ArrivalReturn') : $query->orderBy('ArrivalGo');
 
         if ($request->has('lineId')) {
             $query->where('LineId', $request->query('lineId'));
@@ -25,18 +30,24 @@ class PickupController extends Controller
 
         $pickups = $query->orderBy('Name', 'asc')->get();
 
+        // Filtrer les students par jour et direction
         $pickups = $pickups->map(function ($pickup) use ($dayOfWeek, $directionId) {
-            // filtrer les élèves selon jour + direction
             $students = $pickup->students->filter(function ($student) use ($dayOfWeek, $directionId) {
                 return $student->pivot->DayOfWeek == $dayOfWeek &&
                     $student->pivot->DirectionId == $directionId;
-            });
+            })->map(function ($student) {
+                // On peut ici transformer le student si nécessaire (exclure Picture)
+                unset($student->Picture);
+                return $student;
+            })->values(); // réindexer
 
-            return collect($pickup)->put('nbStudents', $students->unique('StudentId')->count());
+            return collect($pickup)->put('nbStudents', $students->count())
+                ->put('students', $students);
         });
 
         return $this->successRes($pickups);
     }
+
 
     public function show($id, Request $request)
     {
