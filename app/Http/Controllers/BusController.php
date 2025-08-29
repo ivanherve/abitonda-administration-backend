@@ -45,7 +45,7 @@ class BusController extends Controller
             'pickups:PickupId,LineId,Name',
             'driver:EmployeeId,Firstname,Lastname',
             'assistant:EmployeeId,Firstname,Lastname',
-            'pickups.students.classe:PickupId,Name'
+            'pickups.students.classe:ClasseId,Name'
         ])->find($id);
 
         if (!$line) {
