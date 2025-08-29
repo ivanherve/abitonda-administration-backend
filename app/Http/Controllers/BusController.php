@@ -13,10 +13,10 @@ class BusController extends Controller
     public function index()
     {
         $lines = BusLine::with([
-            'pickups.students:id,StudentId,Firstname,Lastname,ClasseId',
-            'driver:id,Firstname,Lastname',
-            'assistant:id,Firstname,Lastname',
-            'pickups:id,BusLineId,Name,Location' // uniquement les colonnes nécessaires
+            'pickups.students:PickupId,StudentId,Firstname,Lastname,ClasseId',
+            'driver:PickupId,Firstname,Lastname',
+            'assistant:PickupId,Firstname,Lastname',
+            'pickups:PickupId,LineId,Name,Location' // uniquement les colonnes nécessaires
         ])->get();
 
         $lines = $lines->map(function ($line) {
