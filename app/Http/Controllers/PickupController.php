@@ -17,13 +17,21 @@ class PickupController extends Controller
         $query = PickupPoint::with([
             'line',
             'students' => function ($q) {
-                // Exclure le champ Picture
-                $q->select('StudentId', 'Firstname', 'Lastname', 'OtherField1', 'OtherField2');
+                // Sélectionner uniquement les colonnes nécessaires, avec préfixe pour éviter l'ambiguïté
+                $q->select(
+                    'students.StudentId',
+                    'students.Firstname',
+                    'students.Lastname',
+                    'students.OtherField1',
+                    'students.OtherField2'
+                );
             }
         ]);
 
+        // Trier selon la direction
         $query = ($directionId == 2) ? $query->orderBy('ArrivalReturn') : $query->orderBy('ArrivalGo');
 
+        // Filtrer par ligne si fourni
         if ($request->has('lineId')) {
             $query->where('LineId', $request->query('lineId'));
         }
@@ -36,18 +44,18 @@ class PickupController extends Controller
                 return $student->pivot->DayOfWeek == $dayOfWeek &&
                     $student->pivot->DirectionId == $directionId;
             })->map(function ($student) {
-                // On peut ici transformer le student si nécessaire (exclure Picture)
+                // Supprimer Picture pour ne pas le renvoyer
                 unset($student->Picture);
                 return $student;
-            })->values(); // réindexer
+            })->values(); // Réindexer
 
-            return collect($pickup)->put('nbStudents', $students->count())
+            return collect($pickup)
+                ->put('nbStudents', $students->count())
                 ->put('students', $students);
         });
 
         return $this->successRes($pickups);
     }
-
 
     public function show($id, Request $request)
     {
