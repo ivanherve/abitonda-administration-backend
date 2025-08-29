@@ -16,7 +16,7 @@ class BusController extends Controller
             'pickups.students:PickupId,StudentId,Firstname,Lastname,ClasseId',
             'driver:EmployeeId,Firstname,Lastname',
             'assistant:EmployeeId,Firstname,Lastname',
-            'pickups:PickupId,LineId,Name,Location' // uniquement les colonnes nécessaires
+            'pickups:PickupId,LineId,Name,Latitude,Longitude' // uniquement les colonnes nécessaires
         ])->get();
 
         $lines = $lines->map(function ($line) {
@@ -42,7 +42,7 @@ class BusController extends Controller
     {
         $line = BusLine::with([
             'pickups.students:PickupId,StudentId,Firstname,Lastname,ClasseId',
-            'pickups:PickupId,LineId,Name,Location',
+            'pickups:PickupId,LineId,Name',
             'driver:EmployeeId,Firstname,Lastname',
             'assistant:EmployeeId,Firstname,Lastname',
             'pickups.students.classe:PickupId,Name'
@@ -77,7 +77,8 @@ class BusController extends Controller
                 return [
                     'PickupId' => $pickup->PickupId,
                     'Name' => $pickup->Name,
-                    'Location' => $pickup->Location
+                    'Latitude' => $pickup->Latitude,
+                    'Longitude' => $pickup->Longitude,
                 ];
             }),
         ];
@@ -124,7 +125,7 @@ class BusController extends Controller
         $dayOfWeek = date('N', strtotime($date));
 
         $line = BusLine::with([
-            'pickups:PickupId,LineId,Name,Location,ArrivalGo,ArrivalReturn', // pickup_point
+            'pickups:PickupId,LineId,Name,Latitude,Longitude,ArrivalGo,ArrivalReturn', // pickup_point
             'pickups.students:StudentId,Firstname,Lastname,ClasseId',             // students
             'pickups.students.classe:ClasseId,Name',                              // classe
             'driver:EmployeeId,Firstname,Lastname',                               // chauffeur
@@ -155,7 +156,8 @@ class BusController extends Controller
             return [
                 'PickupId' => $pickup->PickupId,
                 'Name' => $pickup->Name,
-                'Location' => $pickup->Location,
+                'Latitude' => $pickup->Latitude,
+                'Longitude' => $pickup->Longitude,
                 'Arrival' => $directionId == 1 ? $pickup->ArrivalGo : $pickup->ArrivalReturn,
                 'students' => $studentsForDay,
             ];
