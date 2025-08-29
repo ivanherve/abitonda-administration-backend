@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Classe;
+use App\Models\Family;
 use App\Models\PickupPoint;
 use App\Models\Student;
 use App\Models\Parents;
@@ -294,65 +295,140 @@ class StudentController extends Controller
 
     public function addStudent(Request $request)
     {
-        $firstname = $request->input('Firstname');
-        if (!$firstname)
-            return $this->errorRes('Veuillez insérer un prénom', 404);
-        $lastname = $request->input('Lastname');
-        if (!$lastname)
-            return $this->errorRes('Veuillez insérer un nom de famille', 404);
-        $urubuto = $request->input('Urubuto');
-        if (!$urubuto)
-            return $this->errorRes('Veuillez insérer le code Urubuto de l\'enfant', 404);
-        $birthdate = $request->input('Birthdate');
-        if (!$birthdate)
-            return $this->errorRes('Veuillez insérer une date de naissance', 404);
-        $canteen = filter_var($request->input('Canteen'), FILTER_VALIDATE_BOOLEAN);
-        $transport = filter_var($request->input('Transport'), FILTER_VALIDATE_BOOLEAN);
-        $rulesSigned = filter_var($request->input('rulesSigned'), FILTER_VALIDATE_BOOLEAN);
-        $registrationFileFilled = filter_var($request->input('registrationFileFilled'), FILTER_VALIDATE_BOOLEAN);
-        $vaccinsFile = filter_var($request->input('vaccinsFile'), FILTER_VALIDATE_BOOLEAN);
-        $paid = filter_var($request->input('paid'), FILTER_VALIDATE_BOOLEAN);
-        $address = $request->input('address');
-        $pointDeRamassage = $request->input('pointDeRamassage'); // ✅ Ajout de la lecture
+        return DB::transaction(function () use ($request) {
+            $firstname = $request->input('Firstname');
+            if (!$firstname)
+                return $this->errorRes('Veuillez insérer un prénom', 404);
+            $lastname = $request->input('Lastname');
+            if (!$lastname)
+                return $this->errorRes('Veuillez insérer un nom de famille', 404);
+            $urubuto = $request->input('Urubuto');
+            if (!$urubuto)
+                return $this->errorRes('Veuillez insérer le code Urubuto de l\'enfant', 404);
+            $birthdate = $request->input('Birthdate');
+            if (!$birthdate)
+                return $this->errorRes('Veuillez insérer une date de naissance', 404);
 
-        $classe = $request->input('Classe');
-        if (!$classe)
-            return $this->errorRes('Veuillez insérer une classe', 404);
-        $picture = $request->input('Picture');
-        //if (!$picture) return $this->errorRes('Veuillez insérer une photo', 404);
+            $canteen = filter_var($request->input('Canteen'), FILTER_VALIDATE_BOOLEAN);
+            $transport = filter_var($request->input('Transport'), FILTER_VALIDATE_BOOLEAN);
+            $rulesSigned = filter_var($request->input('rulesSigned'), FILTER_VALIDATE_BOOLEAN);
+            $registrationFileFilled = filter_var($request->input('registrationFileFilled'), FILTER_VALIDATE_BOOLEAN);
+            $vaccinsFile = filter_var($request->input('vaccinsFile'), FILTER_VALIDATE_BOOLEAN);
+            $paid = filter_var($request->input('paid'), FILTER_VALIDATE_BOOLEAN);
+            $address = $request->input('address');
+            $pointDeRamassage = $request->input('pointDeRamassage');
 
-        $classe = Classe::all()->where('Name', '=', $classe)->pluck('ClasseId')->first();
-        if (!$classe)
-            return $this->errorRes('Cette classe est introuvable', 404);
+            $classe = $request->input('Classe');
+            if (!$classe)
+                return $this->errorRes('Veuillez insérer une classe', 404);
 
-        $neighborhood = $request->input('neighborhoodSelected');
-        if (!$neighborhood)
-            return $this->errorRes('Veuillez séléctionner un quartier', 404);
+            $classe = Classe::where('Name', $classe)->pluck('ClasseId')->first();
+            if (!$classe)
+                return $this->errorRes('Cette classe est introuvable', 404);
 
-        $sector = VNeighborhood::all()->where('Neighborhood', '=', $neighborhood)->pluck('SectorId')->first();
+            $neighborhood = $request->input('neighborhoodSelected');
+            if (!$neighborhood)
+                return $this->errorRes('Veuillez séléctionner un quartier', 404);
 
-        $studentToCreate = [
-            'Lastname' => strtoupper($lastname),
-            'Firstname' => strtoupper($firstname),
-            'Urubuto' => $urubuto,
-            'Birthdate' => $birthdate,
-            'Canteen' => $canteen,
-            'Transport' => $transport,
-            'ClasseId' => $classe,
-            'Picture' => $picture,
-            'SectorId' => $sector,
-            'Address' => $address,
-            'InternalRulesSigned' => $rulesSigned,
-            'RegistrationFileFilled' => $registrationFileFilled,
-            'VaccinsFile' => $vaccinsFile,
-            'Paid' => $paid,
-            'PointDeRamassage' => $pointDeRamassage
-        ];
-        #return $this->debugRes($studentToCreate);
-        $newStudent = Student::create($studentToCreate);
+            $sector = VNeighborhood::where('Neighborhood', $neighborhood)->pluck('SectorId')->first();
 
-        if ($newStudent) {
+            $studentToCreate = [
+                'Lastname' => strtoupper($lastname),
+                'Firstname' => strtoupper($firstname),
+                'Urubuto' => $urubuto,
+                'Birthdate' => $birthdate,
+                'Canteen' => $canteen,
+                'Transport' => $transport,
+                'ClasseId' => $classe,
+                'Picture' => $request->input('Picture'),
+                'SectorId' => $sector,
+                'Address' => $address,
+                'InternalRulesSigned' => $rulesSigned,
+                'RegistrationFileFilled' => $registrationFileFilled,
+                'VaccinsFile' => $vaccinsFile,
+                'Paid' => $paid,
+                'PointDeRamassage' => $pointDeRamassage
+            ];
+
+            // ✅ tout est dans la transaction
+            $newStudent = Student::create($studentToCreate);
+
+            // 🔗 assigner la famille
+            $this->assignFamily($newStudent, $request);
+
             return $this->successRes($newStudent);
+        });
+    }
+
+    private function assignFamily(Student $student, Request $request)
+    {
+        $familyId = $request->input('FamilyId');   // id existant ou vide
+        $siblingId = $request->input('SiblingId');
+
+        if ($siblingId) {
+            $sibling = Student::find($siblingId);
+        } else {
+            return $this->errorRes("Aucun frère ou soeur n'a été sélectionné", 404);
+        }
+
+        if ($familyId) {
+            // rattacher l’élève existant
+            $student->update(['family_id' => $familyId]);
+
+        } else {
+            // créer une nouvelle famille
+            $newFamily = Family::create([]);
+
+            // rattacher le nouvel élève
+            $student->update(['family_id' => $newFamily->id]);
+
+            // ⚡ rattacher aussi le sibling
+            $sibling->update(['family_id' => $newFamily->id]);
+
+            // rattacher les parents du sibling
+            $parents = $sibling->parents;  // via relation Eloquent
+            foreach ($parents as $p) {
+                $p->update(['family_id' => $newFamily->id]);
+            }
+        }
+    }
+
+    public function getFamilyFromSibling($siblingId)
+    {
+        // ✅ Récupérer l'élève sibling
+        $sibling = Student::find($siblingId);
+
+        if (!$sibling) {
+            return $this->errorRes("Élève introuvable", 404);
+        }
+
+        // ✅ Vérifier si le sibling a déjà un FamilyId
+        $familyId = $sibling->FamilyId;
+
+        if ($familyId) {
+            // Si FamilyId existe → récupérer frères/soeurs + parents
+            $siblings = Student::where('FamilyId', $familyId)
+                ->where('StudentId', '!=', $siblingId) // exclure le sibling lui-même si besoin
+                ->get();
+
+            $parents = Parents::where('FamilyId', $familyId)->get();
+
+            return $this->successRes([
+                'familyId' => $familyId,
+                'sibling' => $sibling,
+                'siblings' => $siblings,
+                'parents' => $parents
+            ]);
+        } else {
+            // Pas de FamilyId → on renvoie uniquement les parents liés au sibling
+            $parents = $sibling->parents;
+
+            return $this->successRes([
+                'familyId' => null,
+                'sibling' => $sibling,
+                'siblings' => [],
+                'parents' => $parents
+            ]);
         }
     }
 
@@ -673,42 +749,6 @@ class StudentController extends Controller
         return $this->successRes($arr);
     }
 
-    public function getTransportOT1()
-    {
-        $students = VTransportOT1::all();
-        if (!$students)
-            return $this->errorRes('Aucun élève ne prend ce transport', 404);
-        else
-            return $this->successRes($students);
-    }
-
-    public function getTransportOT2()
-    {
-        $students = VTransportOT2::all();
-        if (!$students)
-            return $this->errorRes('Aucun élève ne prend ce transport', 404);
-        else
-            return $this->successRes($students);
-    }
-
-    public function getTransportCT1()
-    {
-        $students = VTransportCT1::all();
-        if (!$students)
-            return $this->errorRes('Aucun élève ne prend ce transport', 404);
-        else
-            return $this->successRes($students);
-    }
-
-    public function getTransportCT2()
-    {
-        $students = VTransportCT2::all();
-        if (!$students)
-            return $this->errorRes('Aucun élève ne prend ce transport', 404);
-        else
-            return $this->successRes($students);
-    }
-
     public function getCanteen()
     {
         $students = VSoras::where('Canteen', true)->get();
@@ -735,63 +775,79 @@ class StudentController extends Controller
             ]);
         }
 
-        $updatedPickups = []; // Tableau pour stocker tous les enregistrements
+        $updatedPickups = [];
 
         try {
             foreach ($settings as $setting) {
                 $day = $setting['day'] ?? null;
                 $goPointName = $setting['goPoint'] ?? null;
-                $goTime = $setting['goTime'] ?? null;
                 $returnPointName = $setting['returnPoint'] ?? null;
-                $returnTime = $setting['returnTime'] ?? null;
 
                 if (!$day)
                     continue;
 
-                // Aller
+                $goPickup = null;
+                $returnPickup = null;
+
+                // 🚍 Aller
                 if ($goPointName) {
                     $goPickup = PickupPoint::where('Name', $goPointName)->first();
                     if ($goPickup) {
-                        $studentPickup = StudentPickup::updateOrCreate(
-                            [
+                        $studentPickup = StudentPickup::where('StudentId', $studentId)
+                            ->where('DayOfWeek', $day)
+                            ->where('DirectionId', 1)
+                            ->first();
+
+                        if ($studentPickup) {
+                            $studentPickup->PickupId = $goPickup->PickupId;
+                            $studentPickup->save();
+                        } else {
+                            $studentPickup = StudentPickup::create([
                                 'StudentId' => $studentId,
                                 'DayOfWeek' => $day,
-                                'DirectionId' => 1
-                            ],
-                            ['PickupId' => $goPickup->PickupId]
-                        );
+                                'DirectionId' => 1,
+                                'PickupId' => $goPickup->PickupId
+                            ]);
+                        }
                         $updatedPickups[] = $studentPickup;
                     }
                 }
 
-                // Retour
+                // 🏠 Retour
                 if ($returnPointName) {
                     $returnPickup = PickupPoint::where('Name', $returnPointName)->first();
                     if ($returnPickup) {
-                        $studentPickup = StudentPickup::updateOrCreate(
-                            [
+                        $studentPickup = StudentPickup::where('StudentId', $studentId)
+                            ->where('DayOfWeek', $day)
+                            ->where('DirectionId', 2)
+                            ->first();
+
+                        if ($studentPickup) {
+                            $studentPickup->PickupId = $returnPickup->PickupId;
+                            $studentPickup->save();
+                        } else {
+                            $studentPickup = StudentPickup::create([
                                 'StudentId' => $studentId,
                                 'DayOfWeek' => $day,
-                                'DirectionId' => 2
-                            ],
-                            ['PickupId' => $returnPickup->PickupId]
-                        );
-
+                                'DirectionId' => 2,
+                                'PickupId' => $returnPickup->PickupId
+                            ]);
+                        }
+                        $updatedPickups[] = $studentPickup;
                     }
                 }
-                array_push($updatedPickups, [
-                    'update_pickup' => $updatedPickups,
+
+                // Log de ce qui s’est passé
+                $updatedPickups[] = [
                     'go_point_name' => $goPointName,
                     'return_point_name' => $returnPointName,
                     'student_id' => $studentId,
-                    'GoPickup' => $goPickup ?? null,
-                    'ReturnPickup' => $returnPickup ?? null,
+                    'GoPickup' => $goPickup,
+                    'ReturnPickup' => $returnPickup,
                     'message' => 'Mise à jour réussie',
                     'day' => $day,
-                ]);
+                ];
             }
-
-            // return $this->debugRes($updatedPickups);
 
             return $this->successRes($updatedPickups);
 
