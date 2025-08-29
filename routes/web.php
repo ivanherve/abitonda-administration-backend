@@ -24,7 +24,7 @@ $router->options('{any:.*}', function() {
     return response('', 200);
 });
 
-$router->group(['prefix' => '/api', 'middleware' => ['cors']], function () use ($router) {
+$router->group(['prefix' => '/api'], function () use ($router) {
     // AUTHENTICATION
     $router->post('/signin', 'AuthController@signIn');
     $router->get('/signout', 'AuthController@signOut');
