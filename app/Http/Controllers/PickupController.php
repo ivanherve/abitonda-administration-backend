@@ -21,9 +21,7 @@ class PickupController extends Controller
                 $q->select(
                     'students.StudentId',
                     'students.Firstname',
-                    'students.Lastname',
-                    'students.OtherField1',
-                    'students.OtherField2'
+                    'students.Lastname'
                 );
             }
         ]);
