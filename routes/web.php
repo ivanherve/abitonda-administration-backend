@@ -19,6 +19,11 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+// Route OPTIONS globale pour gérer toutes les pré-requêtes CORS
+$router->options('{any:.*}', function() {
+    return response('', 200);
+});
+
 $router->group(['prefix' => '/api', 'middleware' => ['cors']], function () use ($router) {
     // AUTHENTICATION
     $router->post('/signin', 'AuthController@signIn');
