@@ -14,8 +14,8 @@ class BusController extends Controller
     {
         $lines = BusLine::with([
             'pickups.students:PickupId,StudentId,Firstname,Lastname,ClasseId',
-            'driver:PickupId,Firstname,Lastname',
-            'assistant:PickupId,Firstname,Lastname',
+            'driver:EmployeeId,Firstname,Lastname',
+            'assistant:EmployeeId,Firstname,Lastname',
             'pickups:PickupId,LineId,Name,Location' // uniquement les colonnes nécessaires
         ])->get();
 
@@ -41,11 +41,11 @@ class BusController extends Controller
     public function show($id)
     {
         $line = BusLine::with([
-            'pickups.students:id,StudentId,Firstname,Lastname,ClasseId',
-            'pickups:id,BusLineId,Name,Location',
-            'driver:id,Firstname,Lastname',
-            'assistant:id,Firstname,Lastname',
-            'pickups.students.classe:id,Name'
+            'pickups.students:PickupId,StudentId,Firstname,Lastname,ClasseId',
+            'pickups:PickupId,LineId,Name,Location',
+            'driver:EmployeeId,Firstname,Lastname',
+            'assistant:EmployeeId,Firstname,Lastname',
+            'pickups.students.classe:PickupId,Name'
         ])->find($id);
 
         if (!$line) {
