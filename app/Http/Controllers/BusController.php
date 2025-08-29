@@ -13,7 +13,7 @@ class BusController extends Controller
     public function index()
     {
         $lines = BusLine::with([
-            'pickups.students:PickupId,StudentId,Firstname,Lastname,ClasseId',
+            'pickups.students:StudentId,Firstname,Lastname,ClasseId',
             'driver:EmployeeId,Firstname,Lastname',
             'assistant:EmployeeId,Firstname,Lastname',
             'pickups:PickupId,LineId,Name,Latitude,Longitude' // uniquement les colonnes nécessaires
@@ -41,7 +41,7 @@ class BusController extends Controller
     public function show($id)
     {
         $line = BusLine::with([
-            'pickups.students:PickupId,StudentId,Firstname,Lastname,ClasseId',
+            'pickups.students:StudentId,Firstname,Lastname,ClasseId',
             'pickups:PickupId,LineId,Name',
             'driver:EmployeeId,Firstname,Lastname',
             'assistant:EmployeeId,Firstname,Lastname',
