@@ -19,7 +19,7 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->group(['prefix' => '/api'], function () use ($router) {
+$router->group(['prefix' => '/api', 'middleware' => ['cors']], function () use ($router) {
     // AUTHENTICATION
     $router->post('/signin', 'AuthController@signIn');
     $router->get('/signout', 'AuthController@signOut');
@@ -52,6 +52,7 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->get('/canteen', 'StudentController@getCanteen');
     $router->post('/student/update-transport', 'StudentController@updateTransport');
     $router->get('/student/{id}/pickups', 'StudentController@getStudentPickups');
+    $router->get('/student/{id}/family', 'StudentController@getFamilyFromSibling');
 
     // Route pour récupérer les frères et sœurs
     $router->get('/students/{studentId}/siblings', 'StudentController@getSiblings');
@@ -82,7 +83,7 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     // PARENTS
     $router->get('/parents', 'StudentController@getStudentParents');
     $router->get('/listparents', 'ParentController@getListParent');
-
+    $router->get('/allparents', 'ParentController@index');
     $router->post('/parents/create', 'ParentController@addParentOfOneStudent');
     $router->post('/removelinkparent', 'ParentController@removeLinkParent');
     $router->post('/editparent', 'ParentController@editParent');
@@ -93,11 +94,6 @@ $router->group(['prefix' => '/api'], function () use ($router) {
 
     // TRANSPORT
     $router->get('/transport', 'StudentController@getTransportList');
-    $router->get('/ot1transport', 'StudentController@getTransportOT1');
-    $router->get('/ot2transport', 'StudentController@getTransportOT2');
-    $router->get('/ct1transport', 'StudentController@getTransportCT1');
-    $router->get('/ct2transport', 'StudentController@getTransportCT2');
-
     $router->get('/bus', 'BusController@index');
     $router->get('/bus/{id}', 'BusController@show');
     $router->post('/bus', 'BusController@store');
