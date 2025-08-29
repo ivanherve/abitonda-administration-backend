@@ -793,23 +793,19 @@ class StudentController extends Controller
                 if ($goPointName) {
                     $goPickup = PickupPoint::where('Name', $goPointName)->first();
                     if ($goPickup) {
-                        $studentPickup = StudentPickup::where('StudentId', $studentId)
+                        $updated = StudentPickup::where('StudentId', $studentId)
                             ->where('DayOfWeek', $day)
                             ->where('DirectionId', 1)
-                            ->first();
+                            ->update(['PickupId' => $goPickup->PickupId]);
 
-                        if ($studentPickup) {
-                            $studentPickup->PickupId = $goPickup->PickupId;
-                            $studentPickup->save();
-                        } else {
-                            $studentPickup = StudentPickup::create([
+                        if ($updated === 0) {
+                            StudentPickup::create([
                                 'StudentId' => $studentId,
                                 'DayOfWeek' => $day,
                                 'DirectionId' => 1,
                                 'PickupId' => $goPickup->PickupId
                             ]);
                         }
-                        $updatedPickups[] = $studentPickup;
                     }
                 }
 
@@ -817,27 +813,23 @@ class StudentController extends Controller
                 if ($returnPointName) {
                     $returnPickup = PickupPoint::where('Name', $returnPointName)->first();
                     if ($returnPickup) {
-                        $studentPickup = StudentPickup::where('StudentId', $studentId)
+                        $updated = StudentPickup::where('StudentId', $studentId)
                             ->where('DayOfWeek', $day)
                             ->where('DirectionId', 2)
-                            ->first();
+                            ->update(['PickupId' => $returnPickup->PickupId]);
 
-                        if ($studentPickup) {
-                            $studentPickup->PickupId = $returnPickup->PickupId;
-                            $studentPickup->save();
-                        } else {
-                            $studentPickup = StudentPickup::create([
+                        if ($updated === 0) {
+                            StudentPickup::create([
                                 'StudentId' => $studentId,
                                 'DayOfWeek' => $day,
                                 'DirectionId' => 2,
                                 'PickupId' => $returnPickup->PickupId
                             ]);
                         }
-                        $updatedPickups[] = $studentPickup;
                     }
                 }
 
-                // Log de ce qui s’est passé
+                // Log
                 $updatedPickups[] = [
                     'go_point_name' => $goPointName,
                     'return_point_name' => $returnPointName,
