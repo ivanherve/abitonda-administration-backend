@@ -908,4 +908,42 @@ class StudentController extends Controller
         return $this->successRes($pickups);
     }
 
+    public function unsetPickupPoint(Request $request)
+    {
+        $studentId = $request->input('studentId');
+        $day = $request->input('day');
+        $direction = $request->input('directionId');
+        $pickupId = $request->input('pickupId');
+
+        $data = [
+            'studentId' => $studentId,
+            'day' => $day,
+            'direction' => $direction,
+            'pickupId' => $pickupId
+        ];
+
+        $pickupsToDelete = [];
+        foreach ($data['day'] as $key => $value) {
+            if ($value) {
+                $pickupsToDelete[] = [
+                    'studentId' => $studentId,
+                    'day' => $value,
+                    'direction' => $direction,
+                    'pickupId' => $pickupId
+                ];
+            }
+        }
+
+        // Supprimer les points de ramassage
+        foreach ($pickupsToDelete as $pickup) {
+            StudentPickup::where('StudentId', $pickup['studentId'])
+                ->where('DayOfWeek', $pickup['day'])
+                ->where('DirectionId', $pickup['direction'])
+                ->where('PickupId', $pickup['pickupId'])
+                ->delete();
+        }
+
+        return $this->errorRes('Point(s) de ramassage supprimé(s) avec succès', 200);
+    }
+
 }
