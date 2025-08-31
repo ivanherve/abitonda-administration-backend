@@ -125,7 +125,10 @@ class BusController extends Controller
         $dayOfWeek = date('N', strtotime($date));
 
         $line = BusLine::with([
-            'pickups:PickupId,LineId,Name,Latitude,Longitude,ArrivalGo,ArrivalReturn', // pickup_point
+            'pickups' => function ($q) use ($directionId) {
+                $q->select('PickupId', 'LineId', 'Name', 'Latitude', 'Longitude', 'ArrivalGo', 'ArrivalReturn')
+                    ->orderBy($directionId == 1 ? 'ArrivalGo' : 'ArrivalReturn', 'asc');
+            }, // pickup_point
             'pickups.students:StudentId,Firstname,Lastname,ClasseId',             // students
             'pickups.students.classe:ClasseId,Name',                              // classe
             'driver:EmployeeId,Firstname,Lastname',                               // chauffeur
