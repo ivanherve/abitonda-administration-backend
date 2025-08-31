@@ -9,19 +9,9 @@ class PickupController extends Controller
 {
     public function index(Request $request)
     {
-        $directionId = $request->query('directionId', 1);
-
         $query = PickupPoint::with([
             'line',
-            // 'students' => function ($q)  {
-            //     $q->select('students.StudentId', 'students.Firstname', 'students.Lastname');
-            // }
         ]);
-
-        // Trier selon la direction
-        $query = ($directionId == 2)
-            ? $query->orderBy('ArrivalReturn', 'asc')
-            : $query->orderBy('ArrivalGo', 'asc');
 
         // Filtrer par ligne si fourni
         if ($request->has('lineId')) {
