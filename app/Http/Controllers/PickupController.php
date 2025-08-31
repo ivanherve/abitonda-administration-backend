@@ -10,24 +10,18 @@ class PickupController extends Controller
     public function index(Request $request)
     {
         $directionId = $request->query('directionId', 1);
-        $date = $request->query('date', date('Y-m-d'));
-        $dayOfWeek = date('N', strtotime($date)); // 1=lundi ... 7=dimanche
 
-        // Charger les pickups avec leur ligne et les students
         $query = PickupPoint::with([
             'line',
-            'students' => function ($q) {
-                // Sélectionner uniquement les colonnes nécessaires, avec préfixe pour éviter l'ambiguïté
-                $q->select(
-                    'students.StudentId',
-                    'students.Firstname',
-                    'students.Lastname'
-                );
-            }
+            // 'students' => function ($q)  {
+            //     $q->select('students.StudentId', 'students.Firstname', 'students.Lastname');
+            // }
         ]);
 
         // Trier selon la direction
-        $query = ($directionId == 2) ? $query->orderBy('ArrivalReturn') : $query->orderBy('ArrivalGo');
+        $query = ($directionId == 2)
+            ? $query->orderBy('ArrivalReturn', 'asc')
+            : $query->orderBy('ArrivalGo', 'asc');
 
         // Filtrer par ligne si fourni
         if ($request->has('lineId')) {
@@ -36,21 +30,12 @@ class PickupController extends Controller
 
         $pickups = $query->orderBy('Name', 'asc')->get();
 
-        // Filtrer les students par jour et direction
-        $pickups = $pickups->map(function ($pickup) use ($dayOfWeek, $directionId) {
-            $students = $pickup->students->filter(function ($student) use ($dayOfWeek, $directionId) {
-                return $student->pivot->DayOfWeek == $dayOfWeek &&
-                    $student->pivot->DirectionId == $directionId;
-            })->map(function ($student) {
-                // Supprimer Picture pour ne pas le renvoyer
-                unset($student->Picture);
-                return $student;
-            })->values(); // Réindexer
-
-            return collect($pickup)
-                ->put('nbStudents', $students->count())
-                ->put('students', $students);
+        // Ajouter nbStudents directement
+        $pickups = $pickups->map(function ($pickup) {
+            return collect($pickup)->put('nbStudents', $pickup->students->count());
         });
+
+        // return $this->debugRes($pickups);
 
         return $this->successRes($pickups);
     }

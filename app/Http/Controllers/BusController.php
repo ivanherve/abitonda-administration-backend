@@ -142,15 +142,18 @@ class BusController extends Controller
                     return $student->pivot->DayOfWeek == $dayOfWeek &&
                         $student->pivot->DirectionId == $directionId;
                 })
-                ->map(function ($student) use ($pickup) { // <-- ajouter $pickup dans use
+                // ->values();
+                ->map(function ($student) use ($pickup, $directionId) { // <-- ajouter $pickup dans use
                     return [
                         'StudentId' => $student->StudentId,
                         'Firstname' => $student->Firstname,
                         'Lastname' => $student->Lastname,
                         'Classe' => $student->classe->Name ?? null,
-                        'PickupPoint' => $pickup->Name
+                        'PickupPoint' => $pickup->Name,
+                        'DirectionId' => $directionId,
                     ];
                 })
+                ->sortBy('Firstname')
                 ->values();
 
             return [
@@ -160,6 +163,7 @@ class BusController extends Controller
                 'Longitude' => $pickup->Longitude,
                 'Arrival' => $directionId == 1 ? $pickup->ArrivalGo : $pickup->ArrivalReturn,
                 'students' => $studentsForDay,
+                'nbStudents' => $studentsForDay->count()
             ];
         });
 
@@ -170,16 +174,16 @@ class BusController extends Controller
         $lineData = [
             'LineId' => $line->LineId,
             'Name' => $line->Name,
+            'directionId' => $directionId,
             'pickups' => $pickups,
+            'nbPickups' => $pickups->count(),
             'driverName' => $line->driver ? $line->driver->Firstname . ' ' . $line->driver->Lastname : null,
             'assistantName' => $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null,
+            'nbStudents' => $students->count(),
+            'students' => $students,
         ];
 
-        return $this->successRes([
-            'line' => $lineData,
-            'students' => $students,
-            'nbStudents' => $students->count(),
-        ]);
+        return $this->successRes($lineData);
     }
 
     public function updateTeam(Request $request)
