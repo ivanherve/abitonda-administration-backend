@@ -11,7 +11,8 @@ class PickupController extends Controller
     {
         $query = PickupPoint::with([
             'line',
-        ]);
+        ])
+        ->withCount('students'); // <- ajoute nbStudents directement;
 
         // Filtrer par ligne si fourni
         if ($request->filled('lineId')) {
@@ -21,11 +22,9 @@ class PickupController extends Controller
         $pickups = $query->orderBy('Name', 'asc')->get();
 
         // Ajouter nbStudents directement
-        $pickups = $pickups->map(function ($pickup) {
-            return collect($pickup)->put('nbStudents', $pickup->students->count());
-        });
-
-        // return $this->debugRes($pickups);
+        // $pickups = $pickups->map(function ($pickup) {
+        //     return collect($pickup)->put('nbStudents', $pickup->students->count());
+        // });
 
         return $this->successRes($pickups);
     }
