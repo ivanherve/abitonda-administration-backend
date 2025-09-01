@@ -2,15 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class StudentPickup extends Model
+class StudentPickup extends Pivot
 {
     protected $table = 'student_pickup';
-    public $incrementing = false; // Clé primaire composite
+    public $incrementing = false; // car clé composite
     public $timestamps = false;
-    protected $primaryKey = null; // car composite
-    protected $fillable = ['StudentId', 'PickupId', 'LineId', 'DirectionId', 'DayOfWeek'];
+
+    protected $fillable = [
+        'StudentId',
+        'PickupId',
+        'LineId',
+        'DirectionId',
+        'DayOfWeek'
+    ];
 
     public function student()
     {

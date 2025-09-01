@@ -19,6 +19,22 @@ class ParentController extends Controller
         $this->middleware('auth');
     }
 
+    // GET /parents?familyId=3
+    public function index(Request $request)
+    {
+        $familyId = $request->query('familyId');
+
+        $query = Parents::query();
+
+        if ($familyId) {
+            $query->where('FamilyId', $familyId);
+        }
+
+        $parents = $query->get();
+
+        return $this->successRes($parents);
+    }
+
     public function addParentOfOneStudent(Request $request)
     {
         $parentSelected = $request->input('Name');

@@ -70,4 +70,14 @@ class Student extends Model
         )->withPivot('DayOfWeek', 'DirectionId');
     }
 
+    public function parents()
+    {
+        return $this->belongsToMany(
+            Parents::class,
+            'parent_student',
+            'StudentId',
+            'ParentId'
+        );
+    }
+
 }
