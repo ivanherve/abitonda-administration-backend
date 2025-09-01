@@ -14,7 +14,7 @@ class PickupController extends Controller
         ]);
 
         // Filtrer par ligne si fourni
-        if ($request->has('lineId')) {
+        if ($request->filled('lineId')) {
             $query->where('LineId', $request->query('lineId'));
         }
 
