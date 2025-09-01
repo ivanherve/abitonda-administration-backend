@@ -117,6 +117,5 @@ $router->group(['prefix' => '/api'], function () use ($router) {
     $router->post('/student-pickup', 'StudentPickupController@store');
     $router->put('/student-pickup/{studentId}/{directionId}/{dayOfWeek}', 'StudentPickupController@update');
     $router->delete('/student-pickup/{studentId}/{directionId}/{dayOfWeek}', 'StudentPickupController@destroy');
-
-
+    $router->post('/student/unset-pickup-point', 'StudentController@unsetPickupPoint');
 });
