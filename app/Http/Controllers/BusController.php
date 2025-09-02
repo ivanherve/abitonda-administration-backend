@@ -91,8 +91,26 @@ class BusController extends Controller
 
     public function store(Request $request)
     {
+        // return $this->debugRes($request->all());
+        $name = $request->input('Name');
+        if (empty($name)) {
+            return $this->errorRes('Le nom est requis', 400);
+        }
+        $driverId = $request->input('DriverId');
+        if (empty($driverId)) {
+            return $this->errorRes('Le chauffeur est requis', 400);
+        }
+        $assistantId = $request->input('AssistantId');
+        if (empty($assistantId)) {
+            return $this->errorRes('L\'assistant est requis', 400);
+        }
+
         try {
-            $line = BusLine::create($request->all());
+            $line = BusLine::create([
+                'Name' => $name,
+                'DriverId' => $driverId,
+                'AssistantId' => $assistantId
+            ]);
             return $this->successRes($line, 201);
         } catch (\Exception $e) {
             return $this->errorRes($e->getMessage(), 400);
