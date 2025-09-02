@@ -91,7 +91,7 @@ class BusController extends Controller
 
     public function store(Request $request)
     {
-        // return $this->debugRes($request->all());
+        return $this->debugRes($request->all());
         $name = $request->input('Name');
         if (empty($name)) {
             return $this->errorRes('Le nom est requis', 400);
