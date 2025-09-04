@@ -204,9 +204,12 @@ class BusController extends Controller
             'students' => $students,
         ];
 
+        $lineData['pickups'] = $lineData['pickups']->filter(function ($pickup) {
+            return $pickup['nbStudents'] > 0;
+        })->values();
+
         return $this->successRes($lineData);
     }
-
     public function updateTeam(Request $request)
     {
         $lineId = $request->input('LineId');
