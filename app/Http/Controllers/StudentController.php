@@ -515,16 +515,27 @@ class StudentController extends Controller
         return $this->successRes($students);
     }
 
-    public function getTransportList()
+    public function getTransportList(Request $request)
     {
-        $students = VTransport::all();
+        $classe = $request->input('classe');
+
+        if (empty($classe)) {
+            $students = VTransport::all();
+        } else {
+            $students = VTransport::where('Classe','=',$classe)->get();
+        }
 
         return $this->successRes($students);
     }
 
-        public function getNoTransportList()
+    public function getNoTransportList(Request $request)
     {
-        $students = VNoTransport::all();
+        $classe = $request->input('classe');
+        if (empty($classe)) {
+            $students = VNoTransport::all();
+        } else {
+            $students = VNoTransport::where('Classe','=',$classe)->get();
+        }
 
         return $this->successRes($students);
     }
