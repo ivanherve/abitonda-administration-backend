@@ -10,6 +10,7 @@ use App\Models\Parents;
 use App\Models\StudentPickup;
 use App\Views\VComingBday;
 use App\Views\VNeighborhood;
+use App\Views\VNoTransport;
 use App\Views\VNumberStudentPerNeighborhood;
 use App\Views\VPastBday;
 use App\Views\VRegistrationIncomplete;
@@ -517,6 +518,13 @@ class StudentController extends Controller
     public function getTransportList()
     {
         $students = VTransport::all();
+
+        return $this->successRes($students);
+    }
+
+        public function getNoTransportList()
+    {
+        $students = VNoTransport::all();
 
         return $this->successRes($students);
     }

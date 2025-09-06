@@ -99,6 +99,7 @@ $router->group(['prefix' => '/api'], function () use ($router) {
 
     // TRANSPORT
     $router->get('/transport', 'StudentController@getTransportList');
+    $router->get('/no-transport', 'StudentController@getNoTransportList');
     $router->get('/bus', 'BusController@index');
     $router->get('/bus/{id}', 'BusController@show');
     $router->post('/bus', 'BusController@store');
