@@ -1,7 +1,11 @@
 FROM php:7.4-apache
 
-RUN apt-get update && apt-get install -y cron && apt-get install nano
-RUN docker-php-ext-install pdo_mysql
+RUN apt-get update && apt-get install -y \
+    cron \
+    nano \
+    git \
+    unzip \
+    && docker-php-ext-install pdo_mysql zip
 
 # Installer Composer depuis l'image officielle
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
