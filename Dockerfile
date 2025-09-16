@@ -6,6 +6,9 @@ RUN docker-php-ext-install pdo_mysql
 # Installer Composer depuis l'image officielle
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Définir le dossier de travail
+WORKDIR /var/www
+
 ADD . /var/www
 ADD ./public /var/www/html
 
