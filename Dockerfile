@@ -3,8 +3,14 @@ FROM php:7.2-apache
 RUN apt-get update && apt-get install -y cron && apt-get install nano
 RUN docker-php-ext-install pdo_mysql
 
+# Installer Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 ADD . /var/www
 ADD ./public /var/www/html
+
+# Installer les dépendances
+RUN composer install --no-dev --optimize-autoloader
 #ADD ./conf /etc/apache2/sites-enabled
 #ADD ./conf /etc/apache2/sites-available
 RUN mkdir /etc/ssl/abitonda-certification
