@@ -16,3 +16,5 @@ RUN a2enmod rewrite
 #RUN a2ensite homework.abitonda.rw
 
 RUN chmod -R 777 /var/www/storage/
+
+EXPOSE 80
