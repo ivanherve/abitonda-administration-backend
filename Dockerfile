@@ -33,7 +33,7 @@ RUN mkdir /etc/ssl/abitonda-certification && chmod 700 /etc/ssl/abitonda-certifi
 RUN composer install --no-dev --optimize-autoloader
 
 # Donner droits sur les dossiers nécessaires
-RUN chmod -R 777 /var/www/storage /var/www/bootstrap/cache
+#RUN chmod -R 777 /var/www/storage /var/www/bootstrap/cache
 
 # Modifier Apache pour écouter sur 8082
 RUN sed -i 's/Listen 80/Listen 8082/' /etc/apache2/ports.conf \
