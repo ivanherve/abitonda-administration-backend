@@ -1,4 +1,4 @@
-FROM php:7.2-apache
+FROM php:7.4-apache
 
 # Corriger les dépôts expirés
 RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list \
