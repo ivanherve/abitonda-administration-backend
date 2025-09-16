@@ -16,5 +16,9 @@ RUN a2enmod rewrite
 #RUN a2ensite homework.abitonda.rw
 
 RUN chmod -R 777 /var/www/storage/
+# Désactiver affichage des Deprecated warnings PHP
+RUN echo "error_reporting = E_ALL & ~E_DEPRECATED & ~E_NOTICE" > /usr/local/etc/php/conf.d/error_reporting.ini \
+    && echo "display_errors = On" >> /usr/local/etc/php/conf.d/error_reporting.ini
 
-EXPOSE 80
+# Exposer le port 8082 (au lieu du 80 par défaut)
+EXPOSE 8082
