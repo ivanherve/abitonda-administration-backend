@@ -1,13 +1,8 @@
 FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y \
-    cron \
-    nano \
-    git \
-    unzip \
-    libzip-dev \
-    && docker-php-ext-install pdo_mysql zip\
-    && rm -rf /var/lib/apt/lists/*
+    zip unzip libzip-dev libpng-dev libonig-dev libxml2-dev \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Installer Composer depuis l'image officielle
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
