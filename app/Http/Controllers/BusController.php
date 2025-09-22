@@ -7,6 +7,7 @@ use App\Models\PickupPoint;
 use App\Models\Student;
 use App\Models\StudentPickup;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BusController extends Controller
 {
@@ -165,6 +166,17 @@ class BusController extends Controller
                 })
                 // ->values();
                 ->map(function ($student) use ($pickup, $directionId) { // <-- ajouter $pickup dans use
+                    $daysOfWeek = DB::select("SELECT 
+            S.StudentId,
+            MAX(CASE WHEN T.DayOfWeek = 1 THEN T.PickupId END) AS Lundi,
+            MAX(CASE WHEN T.DayOfWeek = 2 THEN T.PickupId END) AS Mardi,
+            MAX(CASE WHEN T.DayOfWeek = 3 THEN T.PickupId END) AS Mercredi,
+            MAX(CASE WHEN T.DayOfWeek = 4 THEN T.PickupId END) AS Jeudi,
+            MAX(CASE WHEN T.DayOfWeek = 5 THEN T.PickupId END) AS Vendredi
+        FROM students S
+        LEFT JOIN student_pickup T ON S.StudentId = T.StudentId
+        WHERE T.DayOfWeek is not null and T.DirectionId = $directionId and S.StudentId = $student->StudentId
+        GROUP BY S.StudentId;");
                     return [
                         'StudentId' => $student->StudentId,
                         'Firstname' => $student->Firstname,
@@ -172,6 +184,13 @@ class BusController extends Controller
                         'Classe' => $student->classe->Name ?? null,
                         'PickupPoint' => $pickup->Name,
                         'DirectionId' => $directionId,
+                        'DaysOfWeek' => $daysOfWeek[0] ?? (object)[
+                            'Lundi' => null,
+                            'Mardi' => null,
+                            'Mercredi' => null,
+                            'Jeudi' => null,
+                            'Vendredi' => null
+                        ]
                     ];
                 })
                 ->sortBy('Firstname')
