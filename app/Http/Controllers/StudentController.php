@@ -527,7 +527,6 @@ class StudentController extends Controller
 
         return $this->successRes($students);
     }
-
     public function getNoTransportList(Request $request)
     {
         $classe = $request->input('classe');
@@ -963,6 +962,14 @@ class StudentController extends Controller
         }
 
         return $this->errorRes('Point(s) de ramassage supprimé(s) avec succès', 200);
+    }
+
+    public function getGoogleMyMapsCoordinates($id)
+    {
+        $map = DB::select("call google_my_maps_per_line($id)");
+        if (!$map)
+            return $this->errorRes("Aucune donnée trouvée pour cette ligne", 404);
+        return $this->successRes($map);
     }
 
 }
