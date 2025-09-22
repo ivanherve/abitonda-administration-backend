@@ -102,7 +102,21 @@ class PickupController extends Controller
         if (!$pickup)
             return $this->errorRes('Point de ramassage non trouvé', 404);
 
-        $pickup->update($request->all());
+        $lineId = $request->busLine;
+        $directionId = $request->directionId;
+        $latitude = $request->latitude;
+        $longitude = $request->longitude;
+        $name = $request->name;
+        $arrivalGo = $directionId == 1 ? $request->time : null;
+        $arrivalReturn = $directionId == 2 ? $request->time : null;
+
+        $data = ['LineId' => $lineId, 'Latitude' => $latitude, 'Longitude' => $longitude, 'Name' => $name];
+        if ($arrivalGo) $data['ArrivalGo'] = $arrivalGo;
+        if ($arrivalReturn) $data['ArrivalReturn'] = $arrivalReturn;
+
+        $pickup->update($data);
+        // $pickup->save();
+        
         return $this->successRes($pickup);
     }
 

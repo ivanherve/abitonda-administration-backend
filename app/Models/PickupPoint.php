@@ -14,7 +14,6 @@ class PickupPoint extends Model
         'Name',
         'Latitude',
         'Longitude',
-        'PositionOrder',
         'ArrivalGo',
         'ArrivalReturn'
     ];
