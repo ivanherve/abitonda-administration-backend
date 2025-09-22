@@ -123,8 +123,22 @@ class BusController extends Controller
         $line = BusLine::find($id);
         if (!$line)
             return $this->errorRes('Ligne non trouvée', 404);
+        // return $this->debugRes([$request->all(), $line]);
+        $name = $request->LineName;
+        // On met à jour seulement si la valeur est envoyée
+        if ($request->has('DriverId')) {
+            $driverId = $request->input('DriverId');
+        }
 
-        $line->update($request->all());
+        if ($request->has('AssistantId')) {
+            $assistantId = $request->input('AssistantId');
+        }
+
+        $data = ["Name" => $name];
+        if (isset($driverId)) $data['DriverId'] = $driverId;
+        if (isset($assistantId)) $data['AssistantId'] = $assistantId;
+
+        $line->update($data);
         return $this->successRes($line);
     }
 
