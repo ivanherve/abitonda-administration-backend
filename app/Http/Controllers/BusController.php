@@ -11,6 +11,15 @@ use Illuminate\Support\Facades\DB;
 
 class BusController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
     public function index()
     {
         $lines = BusLine::with([
@@ -135,8 +144,10 @@ class BusController extends Controller
         }
 
         $data = ["Name" => $name];
-        if (isset($driverId)) $data['DriverId'] = $driverId;
-        if (isset($assistantId)) $data['AssistantId'] = $assistantId;
+        if (isset($driverId))
+            $data['DriverId'] = $driverId;
+        if (isset($assistantId))
+            $data['AssistantId'] = $assistantId;
 
         $line->update($data);
         return $this->successRes($line);
@@ -159,7 +170,7 @@ class BusController extends Controller
 
         $line = BusLine::with([
             'pickups' => function ($q) use ($directionId) {
-                $q->select('PickupId', 'LineId', 'Name', 'Latitude', 'Longitude', 'ArrivalGo', 'ArrivalReturn')
+                $q->select('PickupId', 'LineId', 'Name', 'Latitude', 'Longitude', 'ArrivalGo', 'ArrivalReturn', 'ArrivalReturnHalfDay')
                     ->orderBy($directionId == 1 ? 'ArrivalGo' : 'ArrivalReturn', 'asc');
             }, // pickup_point
             'pickups.students:StudentId,Firstname,Lastname,ClasseId',             // students
@@ -198,7 +209,7 @@ class BusController extends Controller
                         'Classe' => $student->classe->Name ?? null,
                         'PickupPoint' => $pickup->Name,
                         'DirectionId' => $directionId,
-                        'DaysOfWeek' => $daysOfWeek[0] ?? (object)[
+                        'DaysOfWeek' => $daysOfWeek[0] ?? (object) [
                             'Lundi' => null,
                             'Mardi' => null,
                             'Mercredi' => null,
@@ -210,15 +221,23 @@ class BusController extends Controller
                 ->sortBy('Firstname')
                 ->values();
 
-            return [
+            $data = [
                 'PickupId' => $pickup->PickupId,
                 'Name' => $pickup->Name,
                 'Latitude' => $pickup->Latitude,
                 'Longitude' => $pickup->Longitude,
-                'Arrival' => $directionId == 1 ? $pickup->ArrivalGo : $pickup->ArrivalReturn,
                 'students' => $studentsForDay,
                 'nbStudents' => $studentsForDay->count()
             ];
+            if($directionId == 1){
+                $data['Arrival'] = $pickup->ArrivalGo;
+            } elseif($directionId == 2){
+                $data['Arrival'] = $pickup->ArrivalReturn;
+            } else {
+                $data['Arrival'] = $pickup->ArrivalReturnHalfDay;
+            }
+            
+            return $data;
         });
 
         $students = $pickups->flatMap(function ($p) {

@@ -15,7 +15,8 @@ class PickupPoint extends Model
         'Latitude',
         'Longitude',
         'ArrivalGo',
-        'ArrivalReturn'
+        'ArrivalReturn',
+        'ArrivalReturnHalfDay',
     ];
 
     public function line()

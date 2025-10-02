@@ -518,7 +518,7 @@ class StudentController extends Controller
         if (empty($classe)) {
             $students = VTransport::all();
         } else {
-            $students = VTransport::where('Classe','=',$classe)->get();
+            $students = VTransport::where('Classe', '=', $classe)->get();
         }
 
         return $this->successRes($students);
@@ -529,7 +529,7 @@ class StudentController extends Controller
         if (empty($classe)) {
             $students = VNoTransport::all();
         } else {
-            $students = VNoTransport::where('Classe','=',$classe)->get();
+            $students = VNoTransport::where('Classe', '=', $classe)->get();
         }
 
         return $this->successRes($students);
@@ -796,12 +796,14 @@ class StudentController extends Controller
                 $day = $setting['day'] ?? null;
                 $goPointName = $setting['goPoint'] ?? null;
                 $returnPointName = $setting['returnPoint'] ?? null;
+                $returnPointHalfDayName = $setting['returnPointHalfDay'] ?? null; // 👈 nouveau
 
                 if (!$day)
                     continue;
 
                 $goPickup = null;
                 $returnPickup = null;
+                $returnHalfDayPickup = null;
 
                 // 🚍 Aller
                 if ($goPointName) {
@@ -823,7 +825,7 @@ class StudentController extends Controller
                     }
                 }
 
-                // 🏠 Retour
+                // 🏠 Retour normal
                 if ($returnPointName) {
                     $returnPickup = PickupPoint::where('Name', $returnPointName)->first();
                     if ($returnPickup) {
@@ -843,15 +845,37 @@ class StudentController extends Controller
                     }
                 }
 
+                // 🕒 Retour demi-journée (uniquement vendredi → on suppose que "Friday" = 5 ou "vendredi")
+                if ($day == 5 && $returnPointHalfDayName) { // 👈 selon ton format DayOfWeek
+                    $returnHalfDayPickup = PickupPoint::where('Name', $returnPointHalfDayName)->first();
+                    if ($returnHalfDayPickup) {
+                        $updated = StudentPickup::where('StudentId', $studentId)
+                            ->where('DayOfWeek', $day)
+                            ->where('DirectionId', 3) // 👈 nouvelle direction
+                            ->update(['PickupId' => $returnHalfDayPickup->PickupId]);
+
+                        if ($updated === 0) {
+                            StudentPickup::create([
+                                'StudentId' => $studentId,
+                                'DayOfWeek' => $day,
+                                'DirectionId' => 3,
+                                'PickupId' => $returnHalfDayPickup->PickupId
+                            ]);
+                        }
+                    }
+                }
+
                 // Log
                 $updatedPickups[] = [
+                    'day' => $day,
+                    'student_id' => $studentId,
                     'go_point_name' => $goPointName,
                     'return_point_name' => $returnPointName,
-                    'student_id' => $studentId,
+                    'return_point_half_day_name' => $returnPointHalfDayName,
                     'GoPickup' => $goPickup,
                     'ReturnPickup' => $returnPickup,
+                    'ReturnHalfDayPickup' => $returnHalfDayPickup,
                     'message' => 'Mise à jour réussie',
-                    'day' => $day,
                 ];
             }
 
