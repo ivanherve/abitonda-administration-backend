@@ -794,89 +794,57 @@ class StudentController extends Controller
         try {
             foreach ($settings as $setting) {
                 $day = $setting['day'] ?? null;
-                $goPointName = $setting['goPoint'] ?? null;
-                $returnPointName = $setting['returnPoint'] ?? null;
-                $returnPointHalfDayName = $setting['returnPointHalfDay'] ?? null; // 👈 nouveau
-
                 if (!$day)
-                    continue;
+                    continue; // ignore si day manquant
 
-                $goPickup = null;
-                $returnPickup = null;
-                $returnHalfDayPickup = null;
+                // Définir les directions avec les champs valides
+                $directions = [];
 
-                // 🚍 Aller
-                if ($goPointName) {
-                    $goPickup = PickupPoint::where('Name', $goPointName)->first();
-                    if ($goPickup) {
-                        $updated = StudentPickup::where('StudentId', $studentId)
-                            ->where('DayOfWeek', $day)
-                            ->where('DirectionId', 1)
-                            ->update(['PickupId' => $goPickup->PickupId]);
-
-                        if ($updated === 0) {
-                            StudentPickup::create([
-                                'StudentId' => $studentId,
-                                'DayOfWeek' => $day,
-                                'DirectionId' => 1,
-                                'PickupId' => $goPickup->PickupId
-                            ]);
-                        }
-                    }
+                if (!empty($setting['goPoint']) && strlen(trim($setting['goPoint'])) > 0) {
+                    $directions[1] = trim($setting['goPoint']);
                 }
 
-                // 🏠 Retour normal
-                if ($returnPointName) {
-                    $returnPickup = PickupPoint::where('Name', $returnPointName)->first();
-                    if ($returnPickup) {
-                        $updated = StudentPickup::where('StudentId', $studentId)
-                            ->where('DayOfWeek', $day)
-                            ->where('DirectionId', 2)
-                            ->update(['PickupId' => $returnPickup->PickupId]);
-
-                        if ($updated === 0) {
-                            StudentPickup::create([
-                                'StudentId' => $studentId,
-                                'DayOfWeek' => $day,
-                                'DirectionId' => 2,
-                                'PickupId' => $returnPickup->PickupId
-                            ]);
-                        }
-                    }
+                if (!empty($setting['returnPoint']) && strlen(trim($setting['returnPoint'])) > 0) {
+                    $directions[2] = trim($setting['returnPoint']);
                 }
 
-                // 🕒 Retour demi-journée (uniquement vendredi → on suppose que "Friday" = 5 ou "vendredi")
-                if ($day == 5 && $returnPointHalfDayName) { // 👈 selon ton format DayOfWeek
-                    $returnHalfDayPickup = PickupPoint::where('Name', $returnPointHalfDayName)->first();
-                    if ($returnHalfDayPickup) {
-                        $updated = StudentPickup::where('StudentId', $studentId)
-                            ->where('DayOfWeek', $day)
-                            ->where('DirectionId', 3) // 👈 nouvelle direction
-                            ->update(['PickupId' => $returnHalfDayPickup->PickupId]);
-
-                        if ($updated === 0) {
-                            StudentPickup::create([
-                                'StudentId' => $studentId,
-                                'DayOfWeek' => $day,
-                                'DirectionId' => 3,
-                                'PickupId' => $returnHalfDayPickup->PickupId
-                            ]);
-                        }
-                    }
+                if ($day == 5 && !empty($setting['returnPointHalfDay']) && strlen(trim($setting['returnPointHalfDay'])) > 0) {
+                    $directions[3] = trim($setting['returnPointHalfDay']);
                 }
 
-                // Log
-                $updatedPickups[] = [
-                    'day' => $day,
-                    'student_id' => $studentId,
-                    'go_point_name' => $goPointName,
-                    'return_point_name' => $returnPointName,
-                    'return_point_half_day_name' => $returnPointHalfDayName,
-                    'GoPickup' => $goPickup,
-                    'ReturnPickup' => $returnPickup,
-                    'ReturnHalfDayPickup' => $returnHalfDayPickup,
-                    'message' => 'Mise à jour réussie',
-                ];
+                // Boucle sur les directions pour créer ou mettre à jour
+                foreach ($directions as $directionId => $pointName) {
+                    if (!$studentId || !$day || !$directionId)
+                        continue; // évite les colonnes vides
+                    if (!is_string($pointName) || strlen($pointName) === 0)
+                        continue;
+
+                    $pickup = PickupPoint::where('Name', $pointName)->first();
+                    if (!$pickup)
+                        continue;
+                    /**/
+                    StudentPickup::upsert(
+                        [
+                            [
+                                'StudentId' => $studentId,
+                                'DirectionId' => $directionId,
+                                'DayOfWeek' => $day,
+                                'PickupId' => $pickup->PickupId,
+                            ]
+                        ],
+                        ['StudentId', 'DirectionId', 'DayOfWeek'], // clé unique pour update
+                        ['PickupId'] // colonnes à mettre à jour si existante
+                    );
+
+                    $updatedPickups[] = [
+                        'day' => $day,
+                        'student_id' => $studentId,
+                        'direction' => $directionId,
+                        'pickup_name' => $pointName,
+                        'pickup_id' => $pickup->PickupId,
+                        'message' => 'Mise à jour réussie',
+                    ];
+                }
             }
 
             return $this->successRes($updatedPickups);
@@ -911,13 +879,16 @@ class StudentController extends Controller
 
         $goPickups = [];
         $returnPickups = [];
+        $returnPickupsHalfDay = [];
 
         foreach ($pickups as $pickup) {
             // Choisir le tableau cible en fonction de la direction
             if ($pickup->pivot->DirectionId == 1) {
                 $directionArray = &$goPickups;
-            } else {
+            } else if ($pickup->pivot->DirectionId == 2) {
                 $directionArray = &$returnPickups;
+            } else if ($pickup->pivot->DirectionId == 3) {
+                $directionArray = &$returnPickupsHalfDay;
             }
 
             $pickupId = $pickup->PickupId;
@@ -930,7 +901,10 @@ class StudentController extends Controller
                     'line' => $pickup->line,
                     'days' => [],
                     'latitude' => $pickup->Latitude,
-                    'longitude' => $pickup->Longitude
+                    'longitude' => $pickup->Longitude,
+                    'ArrivalGo' => $pickup->ArrivalGo ?? null,
+                    'ArrivalReturn' => $pickup->ArrivalReturn ?? null,
+                    'ArrivalReturnHalfDay' => $pickup->ArrivalReturnHalfDay ?? null
                 ];
             }
 
@@ -941,6 +915,7 @@ class StudentController extends Controller
         $pickups = [
             'goPickups' => array_values($goPickups),
             'returnPickups' => array_values($returnPickups),
+            'returnPickupsHalfDay' => array_values($returnPickupsHalfDay)
         ];
 
         return $this->successRes($pickups);
