@@ -26,7 +26,8 @@ class BusController extends Controller
             'pickups.students:StudentId,Firstname,Lastname,ClasseId',
             'driver:EmployeeId,Firstname,Lastname',
             'assistant:EmployeeId,Firstname,Lastname',
-            'pickups:PickupId,LineId,Name,Latitude,Longitude' // uniquement les colonnes nécessaires
+            'pickups:PickupId,LineId,Name,Latitude,Longitude', // uniquement les colonnes nécessaires
+            //'maxPlaces'
         ])->get();
 
         $lines = $lines->map(function ($line) {
@@ -42,6 +43,7 @@ class BusController extends Controller
                 'nbStudents' => $students->count(),
                 'driverName' => $line->driver ? $line->driver->Firstname . ' ' . $line->driver->Lastname : null,
                 'assistantName' => $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null,
+                'maxPlaces' => $line->maxPlaces,
             ];
         });
 
@@ -55,7 +57,8 @@ class BusController extends Controller
             'pickups:PickupId,LineId,Name',
             'driver:EmployeeId,Firstname,Lastname',
             'assistant:EmployeeId,Firstname,Lastname',
-            'pickups.students.classe:ClasseId,Name'
+            'pickups.students.classe:ClasseId,Name',
+            // 'maxPlaces'
         ])->find($id);
 
         if (!$line) {
@@ -91,6 +94,7 @@ class BusController extends Controller
                     'Longitude' => $pickup->Longitude,
                 ];
             }),
+            'maxPlaces'
         ];
 
         return $this->successRes([
@@ -113,6 +117,10 @@ class BusController extends Controller
         $assistantId = $request->input('AssistantId');
         if (empty($assistantId)) {
             return $this->errorRes('L\'assistant est requis', 400);
+        }
+        $maxPlaces = $request->input('maxPlaces');
+        if (empty($maxPlaces) || !is_numeric($maxPlaces) || $maxPlaces <= 0) {
+            return $this->errorRes('Le nombre maximum de places doit être supérieur à 0', 400);
         }
 
         try {
@@ -143,11 +151,20 @@ class BusController extends Controller
             $assistantId = $request->input('AssistantId');
         }
 
+        if ($request->has('maxPlaces')) {
+            $maxPlaces = $request->input('maxPlaces');
+            if (empty($maxPlaces) || !is_numeric($maxPlaces) || $maxPlaces <= 0) {
+                return $this->errorRes('Le nombre maximum de places doit être supérieur à 0', 400);
+            }
+        }
+
         $data = ["Name" => $name];
         if (isset($driverId))
             $data['DriverId'] = $driverId;
         if (isset($assistantId))
             $data['AssistantId'] = $assistantId;
+        if (isset($maxPlaces))
+            $data['maxPlaces'] = $maxPlaces;
 
         $line->update($data);
         return $this->successRes($line);
@@ -176,7 +193,8 @@ class BusController extends Controller
             'pickups.students:StudentId,Firstname,Lastname,ClasseId',             // students
             'pickups.students.classe:ClasseId,Name',                              // classe
             'driver:EmployeeId,Firstname,Lastname',                               // chauffeur
-            'assistant:EmployeeId,Firstname,Lastname'                             // assistant
+            'assistant:EmployeeId,Firstname,Lastname',                            // assistant
+            // 'maxPlaces'
         ])->find($id);
 
         if (!$line) {
@@ -254,6 +272,7 @@ class BusController extends Controller
             'assistantName' => $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null,
             'nbStudents' => $students->count(),
             'students' => $students,
+            'maxPlaces' => $line->maxPlaces
         ];
 
         $lineData['pickups'] = $lineData['pickups']->filter(function ($pickup) {

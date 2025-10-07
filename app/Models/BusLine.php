@@ -9,7 +9,7 @@ class BusLine extends Model
     protected $table = 'bus_line';
     protected $primaryKey = 'LineId';
     public $timestamps = false;
-    protected $fillable = ['Name', 'DriverId', 'AssistantId'];
+    protected $fillable = ['Name', 'DriverId', 'AssistantId', 'maxPlaces'];
 
     public function pickups()
     {
