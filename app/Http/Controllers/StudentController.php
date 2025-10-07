@@ -804,7 +804,7 @@ class StudentController extends Controller
                     $directions[1] = trim($setting['goPoint']);
                 }
 
-                if (!empty($setting['returnPoint']) && strlen(trim($setting['returnPoint'])) > 0) {
+                if ($day != 5 && !empty($setting['returnPoint']) && strlen(trim($setting['returnPoint'])) > 0) {
                     $directions[2] = trim($setting['returnPoint']);
                 }
 
