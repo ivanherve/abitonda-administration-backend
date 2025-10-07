@@ -330,8 +330,8 @@ class StudentController extends Controller
             $sector = VNeighborhood::where('Neighborhood', $neighborhood)->pluck('SectorId')->first();
 
             $studentToCreate = [
-                'Lastname' => strtoupper($lastname),
-                'Firstname' => strtoupper($firstname),
+                'Lastname' => mb_strtoupper($lastname),
+                'Firstname' => mb_strtoupper($firstname),
                 'Urubuto' => $urubuto,
                 'Birthdate' => $birthdate,
                 'Canteen' => $canteen,
@@ -475,7 +475,7 @@ class StudentController extends Controller
                 return $this->errorRes('Veuillez vérifier la ligne ' . ($k + 1) . ". Il manque la classe.", 404);
             $classe = Classe::all()->where('Name', '=', str_replace("\t", '', $v['CLASSE']))->first();
             if (!$classe)
-                return $this->errorRes("Veuillez vérifier " . strtoupper($v['PRENOMS']) . " " . strtoupper($v['NOMS']) . ". La classe de " . $v['Classe'] . " est introuvable", 404);
+                return $this->errorRes("Veuillez vérifier " . mb_strtoupper($v['PRENOMS']) . " " . mb_strtoupper($v['NOMS']) . ". La classe de " . $v['Classe'] . " est introuvable", 404);
             $existingStudentFirstname = Student::all()->where('Firstname', '=', $v['PRENOMS'])->first();
             if ($existingStudentFirstname) {
                 $existingStudentLastname = Student::all()->where('Lastname', '=', $v['NOMS'])->first();
@@ -483,8 +483,8 @@ class StudentController extends Controller
                     return $this->errorRes($v['PRENOMS'] . ' ' . $v['NOMS'] . ' existe déjà dans le système', 404);
             } else
                 Student::create([
-                    'Firstname' => strtoupper(str_replace("\t", '', $v['PRENOMS'])),
-                    'Lastname' => strtoupper(str_replace("\t", "", $v['NOMS'])),
+                    'Firstname' => mb_strtoupper(str_replace("\t", '', $v['PRENOMS'])),
+                    'Lastname' => mb_strtoupper(str_replace("\t", "", $v['NOMS'])),
                     'Birthdate' => date('Y-m-d', strtotime(str_replace('/', '-', str_replace("\t", '', $v['DATE DE NAISSANCE'])))),
                     'Canteen' => str_replace("\t", '', $v['CANTINE']) == 'Oui',
                     'Transport' => str_replace("\t", '', $v['TRANSPORT']) == 'Oui',
@@ -638,8 +638,8 @@ class StudentController extends Controller
         //return $this->debugRes($rulesSigned);
 
         $data = [
-            'Lastname' => strtoupper($lastname),
-            'Firstname' => strtoupper($firstname),
+            'Lastname' => mb_strtoupper($lastname),
+            'Firstname' => mb_strtoupper($firstname),
             'Birthdate' => $birthdate,
             'Urubuto' => $urubuto,
             'Canteen' => ($canteen != $student->Canteen) && $canteen,
@@ -678,7 +678,7 @@ class StudentController extends Controller
         $classe = $request->get('classe');
         if (!$classe)
             return $this->errorRes('De quelle classe s\'agit-il ?', 404);
-        $classe = strtoupper($classe);
+        $classe = mb_strtoupper($classe);
 
         $classeId = Classe::all()->where('Name', '=', $classe)->pluck('ClasseId')->first();
         //return $this->debugRes([$classeId, $classe]);

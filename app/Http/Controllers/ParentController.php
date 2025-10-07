@@ -171,12 +171,12 @@ class ParentController extends Controller
         $kinyarwanda = in_array('Kinyarwanda', $languages) ? 1 : 0;
 
         $parentUpdated = [
-            'Lastname' => strtoupper($lastname),
-            'Firstname' => strtoupper($firstname),
-            'PhoneNumb' => strtoupper($phoneNumb),
-            'Email' => strtoupper($email),
-            'Address' => strtoupper($address),
-            'LinkChild' => strtoupper($linkChild),
+            'Lastname' => mb_strtoupper($lastname),
+            'Firstname' => mb_strtoupper($firstname),
+            'PhoneNumb' => mb_strtoupper($phoneNumb),
+            'Email' => mb_strtoupper($email),
+            'Address' => mb_strtoupper($address),
+            'LinkChild' => mb_strtoupper($linkChild),
             'French' => $french,
             'English' => $english,
             'Kinyarwanda' => $kinyarwanda

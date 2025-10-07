@@ -70,8 +70,8 @@ class EmployeeController extends Controller
         $bank = Bank::all()->where('Name', '=', $data->bankSelected)->pluck('BankId')->first();
 
         $newEmployee = [
-            'Firstname' => strtoupper($data->firstname),
-            'Lastname' => strtoupper($data->lastname),
+            'Firstname' => mb_strtoupper($data->firstname),
+            'Lastname' => mb_strtoupper($data->lastname),
             'Email' => $data->email,
             'BankId' => $bank,
             'BankAccount' => $data->account,

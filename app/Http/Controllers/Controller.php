@@ -46,7 +46,7 @@ class Controller extends BaseController
         $title = explode(' ', $title);
         $newTitle = [];
         for ($i = 0; $i <= sizeof($title) - 1; $i++) {
-            array_push($newTitle, strtoupper($title[$i][0]) . substr($title[$i], 1));
+            array_push($newTitle, mb_strtoupper($title[$i][0]) . substr($title[$i], 1));
         }
         $title = implode('', $newTitle);
         return $title;
