@@ -206,7 +206,9 @@ class BusController extends Controller
         $pickups = $line->pickups->map(function ($pickup) use ($dayOfWeek, $directionId) {
             $studentsForDay = $pickup->students
                 ->filter(function ($student) use ($dayOfWeek, $directionId) {
-                    return $student->pivot->DayOfWeek == $dayOfWeek &&
+                    return 
+                        $student->pivot->Registered == 1 &&
+                        $student->pivot->DayOfWeek == $dayOfWeek &&
                         $student->pivot->DirectionId == $directionId;
                 })
                 // ->values();
