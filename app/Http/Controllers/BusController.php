@@ -35,6 +35,7 @@ class BusController extends Controller
                 ->flatMap(function ($pickup) {
                     return $pickup->students;
                 })
+                ->where('pivot.Registered', 1) // Filtrer les étudiants inscrits
                 ->unique('StudentId');
 
             return [
@@ -69,6 +70,7 @@ class BusController extends Controller
             ->flatMap(function ($pickup) {
                 return $pickup->students;
             })
+            ->where('pivot.Registered', 1) // Filtrer les étudiants inscrits
             ->unique('StudentId')
             ->map(function ($student) {
                 return [
@@ -260,7 +262,7 @@ class BusController extends Controller
 
         $students = $pickups->flatMap(function ($p) {
             return $p['students'];
-        })->unique('StudentId')->values();
+        })->where('Registered', 1)->unique('StudentId')->values();
 
         $lineData = [
             'LineId' => $line->LineId,
