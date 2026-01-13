@@ -101,9 +101,17 @@ class BusController extends Controller
             'maxPlaces'
         ];
 
+        $stuRegistered = [];
+        foreach ($students as $student) {
+            $s = Student::find($student['StudentId']);
+            if ($s->Registered == 1) {
+                $stuRegistered[] = $student;
+            }
+        }
+
         return $this->successRes([
             'line' => $lineData,
-            'students' => $students
+            'students' => $stuRegistered
         ]);
     }
 
