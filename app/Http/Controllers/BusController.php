@@ -264,7 +264,7 @@ class BusController extends Controller
 
         $students = $pickups->flatMap(function ($p) {
             return $p['students'];
-        })->where('Registered', 1)->unique('StudentId')->values();
+        })->unique('StudentId')->values();
 
         $lineData = [
             'LineId' => $line->LineId,
