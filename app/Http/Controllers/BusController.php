@@ -73,12 +73,14 @@ class BusController extends Controller
             ->where('pivot.Registered', 1) // Filtrer les étudiants inscrits
             ->unique('StudentId')
             ->map(function ($student) {
+                if ($student->Registered == 1) {
                 return [
                     'StudentId' => $student->StudentId,
                     'Firstname' => $student->Firstname,
                     'Lastname' => $student->Lastname,
                     'Classe' => $student->classe->Name ?? null
                 ];
+                }
             })
             ->values();
 
