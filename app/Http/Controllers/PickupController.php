@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PickupPoint;
+use App\Models\Student;
 use Illuminate\Http\Request;
 
 class PickupController extends Controller
@@ -55,11 +56,20 @@ class PickupController extends Controller
 
         $pickups = $pickups->map(function ($pickup) use ($dayOfWeek, $directionId) {
             $students = $pickup->students->filter(function ($student) use ($dayOfWeek, $directionId) {
-                return $student->pivot->DayOfWeek == $dayOfWeek &&
+                return 
+                $student->pivot->DayOfWeek == $dayOfWeek &&
                     $student->pivot->DirectionId == $directionId;
             });
 
-            return collect($pickup)->put('nbStudents', $students->unique('StudentId')->count());
+            $stuRegistered = [];
+            foreach ($students as $student) {
+                $s = Student::find($student->StudentId);
+                if ($s->Registered == 1) {
+                    $stuRegistered[] = $student;
+                }
+            }
+
+            return collect($pickup)->put('nbStudents', count($stuRegistered));
         });
 
         return $this->successRes($pickups);

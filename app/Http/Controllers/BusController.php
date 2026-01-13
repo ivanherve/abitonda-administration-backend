@@ -37,10 +37,18 @@ class BusController extends Controller
                 })
                 ->unique('StudentId');
 
+            $stuRegistered = [];
+            foreach ($students as $student) {
+                $s = Student::find($student['StudentId']);
+                if ($s->Registered == 1) {
+                    $stuRegistered[] = $student;
+                }
+            }
+
             return [
                 'LineId' => $line->LineId,
                 'Name' => $line->Name,
-                'nbStudents' => $students->count(),
+                'nbStudents' => count($stuRegistered),
                 'driverName' => $line->driver ? $line->driver->Firstname . ' ' . $line->driver->Lastname : null,
                 'assistantName' => $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null,
                 'maxPlaces' => $line->maxPlaces,
