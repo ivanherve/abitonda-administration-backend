@@ -35,7 +35,6 @@ class BusController extends Controller
                 ->flatMap(function ($pickup) {
                     return $pickup->students;
                 })
-                ->where('pivot.Registered', 1) // Filtrer les étudiants inscrits
                 ->unique('StudentId');
 
             return [
@@ -70,17 +69,14 @@ class BusController extends Controller
             ->flatMap(function ($pickup) {
                 return $pickup->students;
             })
-            ->where('pivot.Registered', 1) // Filtrer les étudiants inscrits
             ->unique('StudentId')
             ->map(function ($student) {
-                if ($student->Registered == 1) {
                 return [
                     'StudentId' => $student->StudentId,
                     'Firstname' => $student->Firstname,
                     'Lastname' => $student->Lastname,
                     'Classe' => $student->classe->Name ?? null
                 ];
-                }
             })
             ->values();
 
@@ -217,7 +213,6 @@ class BusController extends Controller
             $studentsForDay = $pickup->students
                 ->filter(function ($student) use ($dayOfWeek, $directionId) {
                     return 
-                        $student->pivot->Registered == 1 &&
                         $student->pivot->DayOfWeek == $dayOfWeek &&
                         $student->pivot->DirectionId == $directionId;
                 })
@@ -276,6 +271,14 @@ class BusController extends Controller
             return $p['students'];
         })->unique('StudentId')->values();
 
+        $stuRegistered = [];
+        foreach ($students as $student) {
+            $s = Student::find($student['StudentId']);
+            if ($s->Registered == 1) {
+                $stuRegistered[] = $student;
+            }
+        }
+
         $lineData = [
             'LineId' => $line->LineId,
             'Name' => $line->Name,
@@ -285,7 +288,7 @@ class BusController extends Controller
             'driverName' => $line->driver ? $line->driver->Firstname . ' ' . $line->driver->Lastname : null,
             'assistantName' => $line->assistant ? $line->assistant->Firstname . ' ' . $line->assistant->Lastname : null,
             'nbStudents' => $students->count(),
-            'students' => $students,
+            'students' => $stuRegistered,
             'maxPlaces' => $line->maxPlaces
         ];
 
